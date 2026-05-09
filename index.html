@@ -1,0 +1,1790 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Track Timing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- QR Code library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+
+  :root {
+    --navy:       #111B30;
+    --navy-mid:   #1B2C52;
+    --navy-light: #243660;
+    --gold:       #C9A84C;
+    --gold-light: #D4AF37;
+    --gold-dim:   rgba(201,168,76,0.15);
+    --gold-border:rgba(201,168,76,0.35);
+    --silver:     #C8CDD6;
+    --silver-light:#E8EAF0;
+    --bg:         #EDEEF2;
+    --bg2:        #ffffff;
+    --surface:    rgba(255,255,255,0.88);
+    --border:     rgba(27,44,82,0.14);
+    --border2:    rgba(27,44,82,0.08);
+    --text:       #111B30;
+    --text2:      #243660;
+    --text3:      rgba(17,27,48,0.55);
+    --text4:      rgba(17,27,48,0.35);
+    --green:      #2E9E58;
+    --green-bg:   rgba(46,158,88,0.10);
+    --green-border:rgba(46,158,88,0.28);
+    --red:        #c0392b;
+    --red-bg:     rgba(192,57,43,0.08);
+    --orange:     #c07a1a;
+    --radius: 10px; --radius2: 14px; --radius3: 20px;
+    --blur: blur(20px) saturate(160%);
+  }
+
+  body { font-family:-apple-system,'SF Pro Display','Helvetica Neue',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; line-height:1.4; }
+  ::-webkit-scrollbar{width:4px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:var(--silver);border-radius:2px}
+
+  header {
+    position:sticky;top:0;z-index:100;
+    background:var(--navy);
+    border-bottom:1px solid var(--gold-border);
+    padding:0 24px;height:64px;
+    display:flex;align-items:center;justify-content:space-between;
+    box-shadow:0 2px 20px rgba(0,0,0,0.3);
+  }
+  .header-meet {
+    display:flex;align-items:center;gap:8px;padding:6px 14px;
+    background:rgba(255,255,255,0.08);
+    border:1px solid rgba(201,168,76,0.3);
+    border-radius:20px;
+  }
+  .header-meet input { border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:500;color:#E8EAF0;outline:none;width:220px; }
+  .header-meet input::placeholder { color:rgba(232,234,240,0.4); }
+  .dot { width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,0.25);animation:pulse 2s infinite;flex-shrink:0; }
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 3px rgba(201,168,76,0.25)}50%{box-shadow:0 0 0 5px rgba(201,168,76,0.12)}}
+
+  .btn-ghost {
+    height:32px;padding:0 14px;
+    background:rgba(255,255,255,0.9);
+    border:1px solid rgba(201,168,76,0.5);
+    border-radius:20px;font-family:inherit;font-size:13px;font-weight:600;color:#111B30;
+    cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:6px;
+  }
+  .btn-ghost:hover{background:rgba(201,168,76,0.15);border-color:rgba(201,168,76,0.5);} .btn-ghost:active{transform:scale(0.97)}
+
+  main { max-width:1120px;margin:0 auto;padding:28px 24px 60px; }
+  .section-title { font-size:22px;font-weight:700;letter-spacing:-0.4px;color:var(--navy);margin-bottom:4px; }
+  .section-sub { font-size:14px;color:var(--text3);margin-bottom:20px; }
+  .card { background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);overflow:hidden;box-shadow:0 1px 6px rgba(17,27,48,0.06); }
+  .toolbar { display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:20px; }
+  .btn-primary { height:36px;padding:0 18px;background:var(--navy-mid);border:none;border-radius:20px;font-family:inherit;font-size:14px;font-weight:600;color:#fff;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:6px; }
+  .btn-primary:hover{background:var(--navy-light)} .btn-primary:active{transform:scale(0.97)}
+  .btn-green{background:var(--green)} .btn-green:hover{background:#267a45}
+  .upload-btn{position:relative;overflow:hidden}
+  .upload-btn input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer}
+
+  /* FILTER TABS */
+  .filter-bar { display:flex;align-items:center;gap:6px;margin-bottom:16px;flex-wrap:wrap; }
+  .filter-tab { height:32px;padding:0 14px;background:#fff;border:1px solid var(--border);border-radius:20px;font-family:inherit;font-size:12px;font-weight:600;color:#4a5568;cursor:pointer;transition:all 0.15s;white-space:nowrap; }
+  .filter-tab:hover { border-color:var(--gold);color:#111B30; }
+  .filter-tab.active { background:var(--navy);color:#fff;border-color:var(--navy);box-shadow:0 2px 8px rgba(17,27,48,0.2); }
+  .filter-tab-count { display:inline-block;background:rgba(255,255,255,0.2);border-radius:10px;padding:0 5px;font-size:10px;margin-left:4px; }
+  .filter-tab:not(.active) .filter-tab-count { background:rgba(17,27,48,0.08);color:#4a5568; }
+
+  /* HEAT CARDS */
+  .heats-group-label { font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.4px;color:var(--gold);margin:22px 0 8px 2px;display:flex;align-items:center;gap:8px; }
+  .heats-group-label::after { content:'';flex:1;height:1px;background:var(--gold-border); }
+  .heats-group-label:first-child{margin-top:0}
+  .heats-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(188px,1fr));gap:10px;margin-bottom:4px; }
+  .heat-card { border-radius:var(--radius2);cursor:pointer;transition:all 0.18s cubic-bezier(0.34,1.56,0.64,1);position:relative;overflow:hidden;border:1px solid var(--border);box-shadow:0 1px 4px rgba(17,27,48,0.07);border-left-width:3px !important; }
+  .heat-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(17,27,48,0.13);border-color:var(--gold-border);}
+  .heat-card:active{transform:scale(0.97)}
+  .ev-sprint { background:#fff; border-color:#1B2C52; }
+  .ev-mid    { background:#fff; border-color:#1a6b58; }
+  .ev-long   { background:#fff; border-color:#4a3a8a; }
+  .ev-hurdle { background:#fff; border-color:#C9A84C; }
+  .ev-relay  { background:#fff; border-color:#1a5a7a; }
+  .ev-field  { background:#fff; border-color:#7a3a6a; }
+  .ev-other  { background:#fff; border-color:#4a5568; }
+  .gender-bar { height:3px;width:100%; }
+  .g-boys .gender-bar    { background:var(--navy-mid); }
+  .g-girls .gender-bar   { background:#8a2565; }
+  .g-mixed .gender-bar   { background:#4a3a8a; }
+  .g-unknown .gender-bar { background:var(--silver); }
+  .heat-card-body { padding:12px 13px 11px; background:#fff; }
+  .event-label { font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.7px;margin-bottom:3px;color:#7a5a10; }
+  .heat-name { font-size:13px;font-weight:700;color:#111B30;line-height:1.3;margin-bottom:9px; }
+  .heat-footer { display:flex;justify-content:space-between;align-items:center; }
+  .heat-tags { display:flex;gap:4px;flex-wrap:wrap;align-items:center; }
+  .htag { font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;border:1px solid; }
+  .htag-boys  { background:rgba(27,44,82,0.08);  color:#1B2C52; border-color:rgba(27,44,82,0.22); }
+  .htag-girls { background:rgba(138,37,101,0.09); color:#7a2055; border-color:rgba(138,37,101,0.22); }
+  .htag-mixed { background:rgba(74,58,138,0.09);  color:#3d2a80; border-color:rgba(74,58,138,0.22); }
+  .htag-fr,.htag-so,.htag-jr,.htag-sr { background:rgba(201,168,76,0.12); color:#6b4c0e; border-color:rgba(201,168,76,0.35); }
+  .htag-gr { background:rgba(27,44,82,0.06); color:#4a5568; border-color:rgba(27,44,82,0.15); }
+  .heat-chip { font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px; }
+  .chip-start { background:rgba(27,44,82,0.08);color:#1B2C52;border:1px solid rgba(27,44,82,0.2); }
+  .chip-done  { background:rgba(46,158,88,0.1);color:#1a6b3a;border:1px solid rgba(46,158,88,0.3); }
+  .heat-count-text { font-size:10px;color:#5a6a88;font-weight:500; }
+
+  /* TABLE */
+  .table-header { padding:14px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border2);background:#FAFBFC; }
+  .table-header-left { display:flex;align-items:center;gap:10px; }
+  .table-header .title{font-size:15px;font-weight:600;color:var(--navy)}
+  .count-pill{background:var(--silver-light);color:var(--text3);font-size:12px;font-weight:600;padding:2px 8px;border-radius:10px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  thead th{padding:10px 20px;text-align:left;font-size:11px;font-weight:700;color:var(--text3);letter-spacing:0.6px;text-transform:uppercase;border-bottom:1px solid var(--border2);background:#FAFBFC}
+  tbody tr{border-bottom:1px solid var(--border2);transition:background 0.1s} tbody tr:last-child{border-bottom:none} tbody tr:hover{background:rgba(201,168,76,0.04)}
+  tbody td{padding:12px 20px;color:#243660}
+  .lane-num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;background:var(--silver-light);border-radius:6px;font-size:12px;font-weight:700;color:var(--navy)}
+  .btn-del{background:none;border:none;cursor:pointer;font-size:12px;color:var(--red);font-family:inherit;padding:4px 10px;border-radius:8px;transition:background 0.1s}
+  .btn-del:hover{background:var(--red-bg)}
+  .empty-state{text-align:center;padding:48px 20px}
+  .empty-icon{font-size:36px;margin-bottom:12px;opacity:0.3}
+  .empty-title{font-size:15px;font-weight:600;color:var(--text2);margin-bottom:4px}
+  .empty-sub{font-size:13px;color:var(--text3)}
+
+  /* TIMER */
+  #timer-section{margin-top:28px}
+  .timer-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+  .timer-heat-name{font-size:22px;font-weight:700;letter-spacing:-0.5px;color:var(--navy)}
+  .timer-heat-sub{font-size:13px;color:var(--text3);margin-top:2px}
+  .timer-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .btn-save{height:36px;padding:0 20px;background:var(--navy);color:#fff;border:1px solid var(--gold-border);border-radius:20px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:6px;}
+  .btn-save:hover{background:var(--navy-light)} .btn-save:active{transform:scale(0.97)}
+  .timer-grid{display:grid;grid-template-columns:240px 1fr 320px;gap:16px;align-items:start}
+  @media(max-width:900px){.timer-grid{grid-template-columns:1fr}}
+  .panel-title{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.9px;padding:12px 16px 10px;border-bottom:1px solid var(--border2);background:#FAFBFC}
+  .athletes-scroll{max-height:520px;overflow-y:auto}
+  .athlete-item{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;border-bottom:1px solid var(--border2);transition:background 0.1s}
+  .athlete-item:last-child{border-bottom:none} .athlete-item:hover{background:rgba(201,168,76,0.05)} .athlete-item.assigned{opacity:0.45;pointer-events:none}
+  .ath-lane{width:32px;height:32px;flex-shrink:0;background:var(--silver-light);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--navy)}
+  .ath-info{flex:1;min-width:0}
+  .ath-name{font-size:13px;font-weight:600;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ath-team{font-size:11px;color:var(--text3)}
+  .ath-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;flex-shrink:0;background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+  .group-header{display:flex;align-items:center;justify-content:space-between;padding:9px 16px 5px;cursor:pointer;user-select:none;transition:background 0.1s;border-bottom:1px solid var(--border2);background:#FAFBFC}
+  .group-header:hover{background:rgba(201,168,76,0.06)}
+  .group-header-left{display:flex;align-items:center;gap:7px}
+  .group-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px}
+  .group-count{font-size:10px;color:var(--text3);background:var(--silver-light);padding:1px 7px;border-radius:10px}
+  .group-chevron{font-size:11px;color:var(--text4);transition:transform 0.22s ease;line-height:1}
+  .group-chevron.open{transform:rotate(90deg)}
+  .group-body{overflow:hidden;transition:max-height 0.25s ease,opacity 0.2s ease}
+  .group-body.collapsed{max-height:0!important;opacity:0;pointer-events:none}
+  .athletes-table-content{overflow:hidden;transition:max-height 0.25s ease,opacity 0.2s ease}
+  .athletes-table-content.collapsed{max-height:0!important;opacity:0;pointer-events:none}
+  .timer-center{display:flex;flex-direction:column;align-items:center;gap:16px}
+  .timer-display-wrap{width:100%;background:var(--navy);border:1px solid var(--gold-border);border-radius:var(--radius3);padding:32px 24px;text-align:center;transition:box-shadow 0.4s}
+  .timer-display-wrap.running{box-shadow:0 0 0 3px rgba(201,168,76,0.2),0 0 40px rgba(201,168,76,0.08);border-color:rgba(201,168,76,0.6)}
+  .timer-label{font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-bottom:8px}
+  #timer-display{font-size:68px;font-weight:300;letter-spacing:-3px;color:#E8EAF0;font-variant-numeric:tabular-nums;line-height:1;margin-bottom:4px}
+  .timer-unit{font-size:11px;color:rgba(232,234,240,0.4);letter-spacing:2px}
+  .timer-controls{display:flex;gap:12px;width:100%;align-items:stretch}
+  .btn-ctrl{flex:1;height:72px;border:none;border-radius:var(--radius2);font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 12px rgba(0,0,0,0.12)}
+  .btn-ctrl:active{transform:scale(0.96)}
+  .btn-start{background:var(--green);color:#fff;font-size:24px;height:140px;box-shadow:0 6px 20px rgba(46,158,88,0.35);font-weight:800} .btn-start:hover{background:#267a45}
+  .btn-pause{background:rgba(192,122,26,0.12);color:var(--orange);border:1px solid rgba(192,122,26,0.3);font-size:17px} .btn-pause:hover{background:rgba(192,122,26,0.2)}
+  .btn-reset{flex:0 0 72px;height:72px;background:var(--silver-light);color:var(--navy)} .btn-reset:hover{background:var(--silver)}
+  .tap-wrap{width:100%}
+  .tap-btn{width:100%;height:176px;background:var(--navy);border:2px solid var(--gold);border-radius:var(--radius2);font-family:inherit;font-size:28px;font-weight:700;color:var(--gold);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:12px;transition:all 0.1s;position:relative;overflow:hidden;box-shadow:0 4px 20px rgba(17,27,48,0.2)}
+  .tap-btn:hover{background:var(--navy-light);box-shadow:0 6px 28px rgba(201,168,76,0.2)} .tap-btn:active{transform:scale(0.96)}
+  .tap-ripple{position:absolute;border-radius:50%;background:rgba(201,168,76,0.2);transform:scale(0);animation:ripple 0.4s ease-out forwards;pointer-events:none}
+  @keyframes ripple{to{transform:scale(4);opacity:0}}
+  .tap-hint{font-size:12px;color:var(--text3);text-align:center;margin-top:6px}
+  .tap-count-badge{position:absolute;top:10px;right:10px;background:rgba(201,168,76,0.15);border:1px solid var(--gold-border);border-radius:20px;padding:2px 10px;font-size:13px;font-weight:700;color:var(--gold)}
+  .finishes-scroll{max-height:520px;overflow-y:auto}
+  .finish-row{padding:12px 16px;border-bottom:1px solid var(--border2);display:flex;gap:10px;align-items:center;animation:slideIn 0.2s ease}
+  @keyframes slideIn{from{opacity:0;transform:translateY(-4px)}}
+  .finish-row:last-child{border-bottom:none}
+  .place-num{width:28px;height:28px;flex-shrink:0;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+  .place-1{background:rgba(201,168,76,0.18);color:#7a5a10} .place-2{background:rgba(192,192,192,0.2);color:#666} .place-3{background:rgba(180,120,80,0.15);color:#7a4010} .place-n{background:var(--silver-light);color:var(--text3)}
+  .finish-time{font-size:17px;font-weight:500;color:var(--navy);font-variant-numeric:tabular-nums;letter-spacing:-0.5px;flex-shrink:0;min-width:90px}
+  .finish-delta{font-size:10px;color:var(--text3);margin-top:1px}
+  .finish-assign{flex:1;min-width:0}
+  .finish-select{width:100%;padding:7px 10px;background:var(--silver-light);border:1px solid var(--border);border-radius:10px;font-family:inherit;font-size:13px;color:var(--navy);outline:none;cursor:pointer;-webkit-appearance:none}
+  .finish-select:focus{border-color:var(--gold)}
+  .finish-name{font-size:13px;font-weight:600;color:var(--navy);background:var(--green-bg);border:1px solid var(--green-border);border-radius:10px;padding:7px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px}
+  .btn-unassign{background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px;width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:all 0.1s;flex-shrink:0}
+  .btn-unassign:hover{background:var(--red-bg);color:var(--red)}
+
+  /* GUN START - adapted to navy/gold theme */
+  .btn-gun { width:100%; height:40px; border:1px solid var(--gold-border); border-radius:var(--radius); background:rgba(201,168,76,0.08); color:var(--navy); font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.15s; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .btn-gun:hover{background:rgba(201,168,76,0.15)} .btn-gun:active{transform:scale(0.97)}
+  .btn-gun.listening{background:rgba(192,57,43,0.08);border-color:rgba(192,57,43,0.3);color:var(--red)}
+  .gun-dot{width:8px;height:8px;border-radius:50%;background:rgba(201,168,76,0.3);transition:all 0.2s;flex-shrink:0}
+  .btn-gun.listening .gun-dot{background:var(--red);box-shadow:0 0 0 3px rgba(192,57,43,0.18);animation:pulse 1s infinite}
+  .gun-status{width:100%;padding:8px 14px;border-radius:var(--radius);background:rgba(201,168,76,0.06);border:1px solid var(--gold-border);font-size:12px;color:var(--text3);text-align:center;display:flex;align-items:center;justify-content:center;gap:8px}
+  .gun-status.ready{background:rgba(46,158,88,0.07);border-color:var(--green-border);color:var(--green)}
+  .gun-status.error{background:var(--red-bg);border-color:var(--red-border);color:var(--red)}
+  .gun-vol-bar{flex:1;max-width:80px;height:4px;background:rgba(201,168,76,0.1);border-radius:2px;overflow:hidden}
+  .gun-vol-fill{height:100%;background:var(--gold);border-radius:2px;width:0%;transition:width 0.04s}
+
+  /* RESULTS */
+  #results-section{margin-top:36px}
+  .result-heat{margin-bottom:20px}
+  .result-heat-title{font-size:17px;font-weight:700;letter-spacing:-0.3px;color:var(--navy);margin-bottom:10px;display:flex;align-items:center;gap:10px}
+
+  /* QR PANEL */
+  .qr-panel {
+    background:var(--navy);border:1px solid var(--gold-border);border-radius:var(--radius2);
+    padding:24px;margin-bottom:28px;
+    display:flex;align-items:flex-start;gap:28px;flex-wrap:wrap;
+  }
+  .qr-canvas-wrap {
+    background:#fff;border-radius:12px;padding:10px;flex-shrink:0;
+    box-shadow:0 4px 20px rgba(0,0,0,0.4);
+    display:flex;align-items:center;justify-content:center;
+    width:170px;height:170px;
+  }
+  #qr-code-container { width:150px;height:150px;position:relative;overflow:hidden; }
+  #qr-code-container > div { position:absolute;top:0;left:0; }
+  #qr-code-container canvas { display:block!important;border-radius:4px; }
+  #qr-code-container img { display:none!important; }
+  .qr-info { flex:1;min-width:220px; }
+  .qr-title { font-size:17px;font-weight:700;color:#E8EAF0;margin-bottom:6px;letter-spacing:-0.3px; }
+  .qr-sub { font-size:13px;color:rgba(232,234,240,0.55);margin-bottom:16px;line-height:1.6; }
+  .qr-status { display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(201,168,76,0.8);margin-bottom:16px; }
+  .qr-dot { width:7px;height:7px;border-radius:50%;background:var(--gold);flex-shrink:0; }
+  .qr-actions { display:flex;gap:8px;flex-wrap:wrap; }
+  .btn-qr { height:34px;padding:0 16px;border-radius:20px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;border:1px solid;transition:all 0.15s;display:flex;align-items:center;gap:6px; }
+  .btn-qr-gold { background:var(--gold);color:var(--navy);border-color:var(--gold); }
+  .btn-qr-gold:hover { background:var(--gold-light); }
+  .btn-qr-outline { background:transparent;color:#E8EAF0;border-color:rgba(232,234,240,0.25); }
+  .btn-qr-outline:hover { background:rgba(255,255,255,0.08);border-color:rgba(201,168,76,0.4); }
+
+  /* EVENT WINNERS PODIUM */
+  .winners-section { margin-bottom:32px; }
+  .winners-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px; }
+  .winner-card {
+    background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);
+    overflow:hidden;box-shadow:0 1px 6px rgba(17,27,48,0.06);
+  }
+  .winner-card-header {
+    background:#F4F6FA;padding:12px 16px;
+    border-bottom:1px solid var(--border);
+    display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;
+  }
+  .winner-event-name { font-size:16px;font-weight:800;color:#111B30;letter-spacing:-0.3px; }
+  .winner-heat-count { font-size:11px;color:#5a6a88;font-weight:600; }
+  .winner-row {
+    display:flex;align-items:center;gap:12px;padding:11px 16px;
+    border-bottom:1px solid var(--border2);
+  }
+  .winner-row:last-child { border-bottom:none; }
+  .winner-medal { font-size:22px;width:32px;text-align:center;flex-shrink:0; }
+  .winner-info { flex:1;min-width:0; }
+  .winner-name { font-size:14px;font-weight:700;color:#111B30; }
+  .winner-meta { font-size:11px;color:#5a6a88;margin-top:1px; }
+  .winner-time { font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;flex-shrink:0; }
+  .winner-time-gold   { color:#7a5a10; }
+  .winner-time-silver { color:#3a4a68; }
+  .winner-time-bronze { color:#7a4010; }
+
+  /* MODALS */
+  .modal-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(11,17,30,0.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);align-items:center;justify-content:center}
+  .modal-overlay.open{display:flex}
+  .modal{background:var(--bg2);border:1px solid var(--gold-border);border-radius:var(--radius3);padding:28px;width:100%;max-width:400px;margin:16px;box-shadow:0 24px 60px rgba(11,17,30,0.25)}
+  .modal-title{font-size:19px;font-weight:700;letter-spacing:-0.3px;color:var(--navy);margin-bottom:22px}
+  .modal-close{float:right;background:var(--silver-light);border:none;width:28px;height:28px;border-radius:50%;font-size:16px;cursor:pointer;color:var(--text3);display:flex;align-items:center;justify-content:center;transition:background 0.1s}
+  .modal-close:hover{background:var(--silver)}
+  .form-group{margin-bottom:16px}
+  .form-label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;display:block}
+  .form-input{width:100%;padding:10px 14px;background:var(--silver-light);border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:15px;color:var(--navy);outline:none;transition:border-color 0.15s}
+  .form-input:focus{border-color:var(--gold);background:#fff}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .modal-btns{display:flex;gap:10px;margin-top:22px}
+  .modal-btns .btn-primary{flex:1;height:44px;font-size:15px}
+  .btn-cancel{height:44px;padding:0 20px;background:var(--silver-light);border:1px solid var(--border);border-radius:22px;font-family:inherit;font-size:15px;font-weight:500;color:var(--text2);cursor:pointer;flex:1;transition:background 0.1s}
+  .btn-cancel:hover{background:var(--silver)}
+  .setting-row{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--border2)}
+  .setting-row:last-child{border-bottom:none}
+  .setting-label{font-size:15px;font-weight:500;color:var(--navy)} .setting-sub{font-size:12px;color:var(--text3);margin-top:1px}
+  .toggle{position:relative;display:inline-block;width:44px;height:26px} .toggle input{display:none}
+  .toggle-slider{position:absolute;inset:0;background:var(--silver);border-radius:13px;transition:background 0.2s;cursor:pointer}
+  .toggle-slider::before{content:'';position:absolute;width:22px;height:22px;left:2px;top:2px;background:#fff;border-radius:11px;transition:transform 0.2s;box-shadow:0 1px 4px rgba(0,0,0,0.2)}
+  .toggle input:checked + .toggle-slider{background:var(--gold)} .toggle input:checked + .toggle-slider::before{transform:translateX(18px)}
+  kbd{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;background:var(--silver-light);border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:12px;font-weight:600;color:var(--navy)}
+  .toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:var(--silver-light);padding:12px 18px;border-radius:14px;font-size:14px;font-weight:500;display:flex;align-items:center;gap:10px;box-shadow:0 8px 30px rgba(11,17,30,0.3);z-index:999;transition:all 0.3s;border:1px solid var(--gold-border);}
+  .toast.out{opacity:0;transform:translateY(8px)}
+  .divider{height:1px;background:var(--border);margin:24px 0}
+  .hidden{display:none!important} .spacer{height:16px}
+
+  @media(max-width:640px){
+    header{padding:0 16px;height:56px} main{padding:20px 16px 48px}
+    .header-meet{width:100% !important;max-width:100%;margin:0 8px}
+    .header-meet input{width:160px !important;font-size:14px}
+    #timer-display{font-size:52px}
+    .qr-panel{flex-direction:column}
+    .btn-start{height:110px;font-size:22px}
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen" style="position:fixed;inset:0;background:#0D1526;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#1B2C52;border:1px solid rgba(201,168,76,0.35);border-radius:22px;padding:40px 32px;max-width:380px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.5);text-align:center;">
+    <div style="font-size:42px;margin-bottom:12px;">🏁</div>
+    <div style="font-size:26px;font-weight:700;letter-spacing:-0.5px;margin-bottom:8px;color:#E8EAF0;">Track Timing</div>
+    <div style="color:rgba(232,234,240,0.55);margin-bottom:28px;font-size:15px;">Enter your passcode to continue</div>
+    <div style="margin-bottom:20px;"><input id="login-pass" type="password" placeholder="Enter passcode" style="width:100%;padding:14px 16px;font-size:17px;background:rgba(255,255,255,0.06);border:1px solid rgba(201,168,76,0.3);border-radius:12px;text-align:center;letter-spacing:4px;color:#E8EAF0;outline:none;" onkeyup="if(event.key==='Enter')loginUser()"></div>
+    <button onclick="loginUser()" style="width:100%;height:50px;background:#C9A84C;color:#111B30;border:none;border-radius:14px;font-size:17px;font-weight:700;cursor:pointer;letter-spacing:0.3px;">Unlock</button>
+    <div style="margin-top:24px;font-size:12px;color:rgba(232,234,240,0.35);">Your data stays private on this device.<br>No internet or accounts required.</div>
+  </div>
+</div>
+
+<header style="height:72px;max-width:1120px;margin:0 auto;padding:0 24px;justify-content:space-between;">
+  <div class="header-meet" style="width:420px;max-width:100%;">
+    <div class="dot"></div>
+    <input id="meet-name" type="text" value="My Track Meet 2026" placeholder="Event / Meet name" onchange="saveMeetName()" style="width:380px;font-size:15px;">
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <button class="btn-ghost" onclick="manualSync()" title="Sync athletes &amp; results with other devices (manual — timers stay independent)">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8l-2 2 2 2M12 8l2-2-2-2M2 10h12M2 6h12"/></svg>
+      Sync
+    </button>
+    <button class="btn-ghost" onclick="showSettings()">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v1.5M8 13.5V15M15 8h-1.5M2.5 8H1M12.4 3.6l-1.1 1.1M4.7 11.3l-1.1 1.1M12.4 12.4l-1.1-1.1M4.7 4.7L3.6 3.6"/></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+  <!-- SUPABASE SETUP BANNER (styled to match first site) -->
+  <div class="setup-banner" id="setup-banner" style="background:rgba(201,168,76,0.06);border:1px solid var(--gold-border);border-radius:var(--radius2);padding:16px 20px;margin-bottom:20px;display:flex;align-items:flex-start;gap:14px;">
+    <div style="font-size:22px;flex-shrink:0;margin-top:1px;">🔗</div>
+    <div style="flex:1;">
+      <div style="font-size:15px;font-weight:700;color:var(--gold);margin-bottom:4px;">Manual cross-device sync</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:8px;">Connected to Supabase. Tap <strong>Sync</strong> to share athletes &amp; results across devices. Each device runs its own timer independently — no interruptions.</div>
+      <div style="font-size:11px;color:var(--text3);">Manual sync only • Timers &amp; live finishes stay local to your device</div>
+    </div>
+  </div>
+
+  <!-- MANAGE -->
+  <div id="manage-section">
+    <div class="section-title">Athletes &amp; Heats</div>
+    <div class="section-sub">Upload your CSV — heats sort automatically by event, then gender, then grade</div>
+
+    <div class="toolbar">
+      <label class="btn-ghost upload-btn">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8 12V3M4 7l4-4 4 4M2 13h12"/></svg>
+        Upload CSV
+        <input type="file" id="csv-upload" accept=".csv" onchange="handleCSVUpload(event)">
+      </label>
+      <span style="font-size:11px;color:var(--text3);">Columns: Event, Heat, Name, Grade, Gender, School, Lane</span>
+      <button class="btn-primary" onclick="loadSampleData()" style="margin-left:auto;">
+        Load Demo
+      </button>
+      <button class="btn-ghost" onclick="saveProject()">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8 1v9M4 7l4 4 4-4M2 13h12"/></svg>
+        Save File
+      </button>
+      <button class="btn-ghost" onclick="document.getElementById('project-upload').click()">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8 12V3M4 7l4-4 4 4M2 13h12"/></svg>
+        Load File
+      </button>
+      <input type="file" id="project-upload" accept=".json" style="display:none" onchange="loadProject(event)">
+      <button class="btn-primary btn-green" onclick="showAddModal()">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 2v12M2 8h12"/></svg>
+        Add Athlete
+      </button>
+    </div>
+
+    <div class="filter-bar" id="event-filter-bar">
+      <button class="filter-tab active" onclick="setEventFilter('all',this)">All Events</button>
+    </div>
+
+    <div id="heats-section"></div>
+
+    <div class="card">
+      <div class="table-header" onclick="toggleAthletesTable()" style="cursor:pointer;user-select:none;">
+        <div class="table-header-left">
+          <span class="group-chevron open" id="athletes-chevron">▶</span>
+          <span class="title">All Athletes</span>
+          <span id="athlete-count" class="count-pill">0</span>
+        </div>
+        <button class="btn-del" onclick="event.stopImmediatePropagation();clearAllData()">Clear roster</button>
+      </div>
+      <div id="athletes-table-content" class="athletes-table-content" style="max-height:800px;">
+        <div style="overflow-x:auto;">
+          <table>
+            <thead><tr><th>Heat</th><th style="width:60px;text-align:center;">Lane</th><th>Athlete</th><th>Team</th><th style="width:80px;text-align:right;"></th></tr></thead>
+            <tbody id="athletes-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TIMER -->
+  <div id="timer-section" class="hidden">
+    <div class="timer-header">
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="timer-heat-name" id="heat-title"></div>
+          <span id="race-number-badge" style="font-size:11px;font-weight:700;color:#7a5a10;background:rgba(201,168,76,0.18);padding:3px 8px;border-radius:8px;display:none;"></span>
+        </div>
+        <div class="timer-heat-sub">
+          <span id="assigned-count"></span>
+          <span style="color:var(--text4);margin:0 6px;">·</span>
+          <span id="next-place" style="color:var(--green);font-weight:600;"></span>
+        </div>
+      </div>
+      <div class="timer-actions">
+        <button class="btn-save" onclick="saveAndClearHeat()">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 11v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2M8 1v8M5 6l3 3 3-3"/></svg>
+          Save &amp; Next Heat
+        </button>
+        <button class="btn-ghost" onclick="closeTimer()">Close</button>
+      </div>
+    </div>
+    <div class="timer-grid">
+      <div class="card">
+        <div class="panel-title" style="display:flex;justify-content:space-between;align-items:center;">
+          <span>Athletes in Heat</span>
+          <button onclick="showWalkOnModal()" style="display:flex;align-items:center;gap:5px;background:var(--gold-dim);border:1px solid var(--gold-border);color:#7a5a10;font-family:inherit;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;cursor:pointer;" onmouseover="this.style.background='rgba(201,168,76,0.25)'" onmouseout="this.style.background='var(--gold-dim)'">
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M8 2v12M2 8h12"/></svg>
+            Walk-on
+          </button>
+        </div>
+        <div class="athletes-scroll" id="athletes-list"></div>
+      </div>
+      <div class="timer-center">
+        <div class="timer-display-wrap" id="timer-container">
+          <div class="timer-label">Elapsed Time</div>
+          <div id="timer-display">00:00.000</div>
+          <div class="timer-unit">MIN · SEC · MS</div>
+        </div>
+        <div class="timer-controls" style="width:100%;">
+          <button class="btn-ctrl btn-start" id="start-btn" onclick="startTimer()">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 2l10 6-10 6V2z"/></svg>Start
+          </button>
+          <button class="btn-ctrl btn-pause" onclick="stopTimer()">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="2" width="4" height="12" rx="1"/><rect x="9" y="2" width="4" height="12" rx="1"/></svg>Pause
+          </button>
+          <button class="btn-ctrl btn-reset" onclick="resetTimer()" title="Reset">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2.5 8A5.5 5.5 0 108 2.5H5.5"/><path d="M5.5 2v3H2.5"/></svg>
+          </button>
+        </div>
+
+        <!-- GUN START BUTTON (added from second site, styled for navy/gold) -->
+        <button class="btn-gun" id="gun-btn" onclick="toggleGunStart()">
+          🎙️ <span id="gun-label">Gun Start</span>
+          <span class="gun-dot" id="gun-dot"></span>
+        </button>
+        <div id="gun-status" class="gun-status hidden"></div>
+
+        <!-- Quick Gun Sensitivity (visible in timer - mobile friendly) -->
+        <div style="width:100%;margin-top:8px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text3);padding:0 4px;">
+          <span style="flex-shrink:0;font-weight:600;">Sensitivity</span>
+          <input type="range" id="gun-sens-quick" min="0.15" max="0.40" step="0.01" style="flex:1;height:28px;" 
+                 oninput="updateGunSensitivityQuick(this.value)">
+          <span id="gun-sens-quick-val" style="font-weight:700;min-width:38px;text-align:right;font-size:14px;">0.28</span>
+        </div>
+
+        <div class="tap-wrap">
+          <button class="tap-btn" id="tap-btn" onclick="tapFinish(event)">
+            <span>TAP FINISH</span>
+            <span class="tap-count-badge" id="tap-count">0</span>
+          </button>
+          <div class="tap-hint">Press <kbd>T</kbd> to tap · <kbd>S</kbd> to start/stop</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="panel-title" style="display:flex;justify-content:space-between;align-items:center;">
+          <span>Finish Order</span>
+          <button class="btn-del" onclick="clearFinishes()" style="font-size:12px;font-weight:500;padding:2px 8px;">Clear</button>
+        </div>
+        <div class="finishes-scroll" id="finishes-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results-section" class="spacer">
+    <div class="divider"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+      <div>
+        <div class="section-title">Meet Results</div>
+        <div class="section-sub">Official times, event winners &amp; placements across all heats</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn-primary" onclick="openSpectatorPage()" style="background:var(--gold);color:var(--navy);font-weight:700;">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 3H3a1 1 0 00-1 1v9a1 1 0 001 1h9a1 1 0 001-1v-4M10 1h5v5M14 2L8 8"/></svg>
+          Spectator Page
+        </button>
+        <button class="btn-primary" onclick="exportAllResults()">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8 1v9M4 7l4 4 4-4M2 13h12"/></svg>
+          Export CSV
+        </button>
+      </div>
+    </div>
+
+    <!-- QR PANEL -->
+    <div class="qr-panel">
+      <div class="qr-canvas-wrap">
+        <div id="qr-code-container"></div>
+      </div>
+      <div class="qr-info">
+        <div class="qr-title">📱 Share with Spectators</div>
+        <div class="qr-sub">Scan this QR code to open the live results page on any phone or tablet. Regenerates each time you save a heat.</div>
+        <div class="qr-status"><span class="qr-dot"></span><span id="qr-status-text">Save a heat to generate the QR code</span></div>
+        <div class="qr-actions">
+          <button class="btn-qr btn-qr-gold" onclick="openSpectatorPage()">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 3H3a1 1 0 00-1 1v9a1 1 0 001 1h9a1 1 0 001-1v-4M10 1h5v5M14 2L8 8"/></svg>
+            Open Results Page
+          </button>
+          <button class="btn-qr btn-qr-outline" onclick="downloadQR()">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 1v9M4 7l4 4 4-4M2 13h12"/></svg>
+            Download QR
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- EVENT WINNERS -->
+    <div class="winners-section" id="event-winners-section" style="display:none;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <div class="section-title" style="margin-bottom:0;font-size:19px;">🏆 Event Winners</div>
+        <span style="font-size:13px;color:var(--text3);">Top 3 across all heats per event</span>
+      </div>
+      <div class="winners-grid" id="winners-grid"></div>
+    </div>
+
+    <div class="divider" style="margin:20px 0;"></div>
+
+    <!-- ALL RESULTS TABLE -->
+    <div class="card" style="margin-bottom:24px;">
+      <div class="table-header">
+        <div class="table-header-left">
+          <span class="title">All Recorded Athletes</span>
+          <span id="total-results-count" class="count-pill">0</span>
+        </div>
+      </div>
+      <div style="overflow-x:auto;max-height:420px;">
+        <table>
+          <thead><tr><th>Heat / Event</th><th style="width:60px;text-align:center;">Place</th><th>Time</th><th>Athlete</th><th>Team</th><th style="width:70px;text-align:center;">Lane</th></tr></thead>
+          <tbody id="all-results-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section-title" style="font-size:17px;margin-bottom:12px;">Results by Heat</div>
+    <div id="results-content"></div>
+  </div>
+</main>
+
+<!-- ADD MODAL -->
+<div id="add-modal" class="modal-overlay" onclick="if(event.target===this)hideAddModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="hideAddModal()">✕</button>
+    <div class="modal-title">Add Athlete</div>
+    <div class="form-group"><label class="form-label">Heat / Event</label><input id="add-heat" class="form-input" type="text" placeholder="100m — Heat 1 — Boys Grade 10"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Lane</label><input id="add-lane" class="form-input" type="number" value="1" min="1" max="12"></div>
+      <div class="form-group"><label class="form-label">Team / School</label><input id="add-team" class="form-input" type="text" placeholder="School / Club"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Full Name</label><input id="add-name" class="form-input" type="text" placeholder="Jordan Lee"></div>
+    <div class="modal-btns"><button class="btn-primary btn-green" onclick="addAthlete()">Add to Roster</button><button class="btn-cancel" onclick="hideAddModal()">Cancel</button></div>
+  </div>
+</div>
+
+<!-- WALK-ON MODAL -->
+<div id="walkon-modal" class="modal-overlay" onclick="if(event.target===this)hideWalkOnModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="hideWalkOnModal()">✕</button>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+      <div style="width:32px;height:32px;background:rgba(52,199,89,0.12);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;">🏃</div>
+      <div class="modal-title" style="margin-bottom:0;">Add Walk-on</div>
+    </div>
+    <p style="font-size:13px;color:var(--text3);margin-bottom:20px;" id="walkon-heat-label"></p>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Full Name</label><input id="wo-name" class="form-input" type="text" placeholder="Athlete name"></div>
+      <div class="form-group"><label class="form-label">Lane</label><input id="wo-lane" class="form-input" type="number" placeholder="Lane #" min="1" max="12"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">School / Club</label><input id="wo-team" class="form-input" type="text" placeholder="Unattached"></div>
+      <div class="form-group"><label class="form-label">Grade (optional)</label><input id="wo-grade" class="form-input" type="text" placeholder="e.g. 10"></div>
+    </div>
+    <div style="background:rgba(255,149,0,0.08);border:0.5px solid rgba(255,149,0,0.25);border-radius:10px;padding:10px 14px;margin-bottom:4px;display:flex;align-items:center;gap:8px;">
+      <span>⚠️</span><span style="font-size:12px;color:#b36a00;font-weight:500;">Walk-on is added to this heat and the master roster.</span>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-primary btn-green" onclick="addWalkOn()">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 2v12M2 8h12"/></svg>Add to Heat
+      </button>
+      <button class="btn-cancel" onclick="hideWalkOnModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT CONFIRM MODAL -->
+<div id="edit-modal" class="modal-overlay" onclick="if(event.target===this)hideEditModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="hideEditModal()">✕</button>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+      <div style="width:36px;height:36px;background:rgba(201,168,76,0.12);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">✏️</div>
+      <div class="modal-title" style="margin-bottom:0;">Edit Heat Results</div>
+    </div>
+    <p id="edit-modal-heat-name" style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:8px;"></p>
+    <p style="font-size:13px;color:var(--text3);margin-bottom:20px;line-height:1.6;">All saved finish times will be restored into the timer. You can re-assign athletes, delete a tap, or add new ones. Hit <strong>Save &amp; Next Heat</strong> when done to overwrite.</p>
+    <div class="modal-btns">
+      <button class="btn-primary" onclick="confirmEditHeat()" style="background:var(--gold);color:var(--navy);font-weight:700;">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2l3 3-9 9H2v-3L11 2z"/></svg>
+        Open for Editing
+      </button>
+      <button class="btn-cancel" onclick="hideEditModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div id="settings-modal" class="modal-overlay" onclick="if(event.target===this)hideSettings()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="hideSettings()">✕</button>
+    <div class="modal-title">Settings</div>
+    <div class="setting-row">
+      <div><div class="setting-label">Auto-assign last athlete</div><div class="setting-sub">Fills the final lane automatically</div></div>
+      <label class="toggle"><input type="checkbox" id="auto-assign-toggle" checked onchange="updateSettings()"><span class="toggle-slider"></span></label>
+    </div>
+    <div class="setting-row">
+      <div><div class="setting-label">Sound on tap</div><div class="setting-sub">Subtle confirmation tone</div></div>
+      <label class="toggle"><input type="checkbox" id="sound-toggle" checked onchange="updateSettings()"><span class="toggle-slider"></span></label>
+    </div>
+    <div class="setting-row">
+      <div><div class="setting-label">Gun sensitivity</div><div class="setting-sub">Lower = more sensitive (0.15–0.40)</div></div>
+      <input type="range" id="gun-sens" min="0.15" max="0.40" step="0.01" style="width:120px" onchange="updateGunSensitivity()">
+      <span id="gun-sens-val" style="font-size:12px;font-weight:600;color:var(--text3);min-width:40px;text-align:right">0.28</span>
+    </div>
+    <div class="setting-row" style="border:none;padding-bottom:0;">
+      <div><div class="setting-label" style="font-size:13px;color:var(--text3);">Keyboard shortcuts</div><div class="setting-sub" style="margin-top:6px;line-height:1.8;"><kbd>T</kbd> Tap finish &nbsp;<kbd>S</kbd> Start/Stop &nbsp;<kbd>Esc</kbd> Close</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════
+// SUPABASE CONFIG (from second site - hardcoded for instant sync)
+// ════════════════════════════════════════════
+var SUPABASE_URL = 'https://vsycqimhkzppautumsyo.supabase.co';
+var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZzeWNxaW1oa3pwcGF1dHVtc3lvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4MTMyMjEsImV4cCI6MjA5MzM4OTIyMX0.upBxit5d5nA6b9oVy8CbxIbzpO2m7_Df27IgKjg3l2k';
+var sbClient = null;
+var realtimeChannel = null;
+var syncEnabled = false;
+var lastSeenUpdatedAt = null;
+var pollInterval = null;
+
+// ════════════════════════════════════════════
+// HEAT CARD COLOR & SORT LOGIC (from first site - kept intact)
+// ════════════════════════════════════════════
+function getEventClass(h){const s=(h||'').toLowerCase();if(/\brelay\b/.test(s))return'ev-relay';if(/hurdle/.test(s))return'ev-hurdle';if(/\b(55m|60m|100m|200m|dash)\b/.test(s))return'ev-sprint';if(/\b(300m|400m|800m)\b/.test(s))return'ev-mid';if(/\b(1500m|1600m|mile|3000m|3200m|5000m|10000m)\b|cross/.test(s))return'ev-long';if(/jump|vault|throw|shot|discus|javelin|hammer|pole/.test(s))return'ev-field';return'ev-other';}
+function getGenderClass(h){const s=(h||'').toLowerCase();if(/\b(boys|male|men)\b/.test(s))return'g-boys';if(/\b(girls|female|women)\b/.test(s))return'g-girls';if(/mixed/.test(s))return'g-mixed';return'g-unknown';}
+function getEventLabel(h){const s=(h||'').toLowerCase();if(/\brelay\b/.test(s))return'Relay';if(/hurdle/.test(s))return'Hurdles';const m=s.match(/\b(\d+m)\b/);if(m)return m[1].toUpperCase();if(/mile/.test(s))return'Mile';if(/cross/.test(s))return'XC';if(/shot/.test(s))return'Shot Put';if(/discus/.test(s))return'Discus';if(/javelin/.test(s))return'Javelin';if(/hammer/.test(s))return'Hammer';if(/pole/.test(s))return'Pole Vault';if(/high jump/.test(s))return'High Jump';if(/long jump/.test(s))return'Long Jump';if(/triple/.test(s))return'Triple Jump';return'';}
+function gradeGenderTag(h, g) {
+  const m = (h || '').match(/grade\s*(\d+)/i);
+  const gr = m ? m[1] : (g && g.length === 1 ? g[0] : null);
+  if (!gr) return '';
+  const s = (h || '').toLowerCase();
+  const gender = s.includes('boys') || s.includes('male') ? 'B' : 
+                 s.includes('girls') || s.includes('female') ? 'G' : '';
+  return `<span class="htag htag-gr">${gr}${gender}</span>`;
+}
+
+const EV_ORDER={'ev-sprint':0,'ev-hurdle':1,'ev-relay':2,'ev-mid':3,'ev-long':4,'ev-field':5,'ev-other':6};
+function evDistKey(h){const s=(h||'').toLowerCase();const seqs=['55m','60m','100m','200m','300m','400m','800m','1500m','1600m','mile','3000m','3200m','5000m','10000m','hurdle','relay','shot','discus','javelin','hammer','pole','high jump','long jump','triple'];for(let i=0;i<seqs.length;i++)if(s.includes(seqs[i]))return i;return 99;}
+function genderKey(h){const s=(h||'').toLowerCase();if(/\b(boys|male)\b/.test(s))return 0;if(/\b(girls|female)\b/.test(s))return 1;return 2;}
+function gradeKey(h){const m=(h||'').match(/grade\s*(\d+)/i);return m?parseInt(m[1]):99;}
+function heatNumKey(h){const m=(h||'').match(/heat\s*(\d+)/i);return m?parseInt(m[1]):99;}
+function sortHeats(heats){return[...heats].sort((a,b)=>{const eA=EV_ORDER[getEventClass(a)],eB=EV_ORDER[getEventClass(b)];if(eA!==eB)return eA-eB;const dA=evDistKey(a),dB=evDistKey(b);if(dA!==dB)return dA-dB;const gA=genderKey(a),gB=genderKey(b);if(gA!==gB)return gA-gB;const grA=gradeKey(a),grB=gradeKey(b);if(grA!==grB)return grA-grB;return heatNumKey(a)-heatNumKey(b);});}
+const EV_GROUP_NAMES={'ev-sprint':'🏃 Sprints','ev-hurdle':'🚧 Hurdles','ev-relay':'🔄 Relays','ev-mid':'⚡ Middle Distance','ev-long':'🏅 Distance','ev-field':'🎯 Field Events','ev-other':'📋 Other Events'};
+
+// ════════════════════════════════════════════
+// DIVISION WINNERS (from first site - kept intact)
+// ════════════════════════════════════════════
+function buildDivisionMap() {
+  const divMap = {};
+  const distOrder = ['55M','60M','100M','200M','300M','400M','800M','1500M','1600M','Mile','3000M','3200M','5000M','10000M','Cross Country','Hurdles','Relay','Shot Put','Discus','Javelin','Hammer','Pole Vault','High Jump','Long Jump','Triple Jump'];
+
+  Object.keys(results).forEach(heatName => {
+    results[heatName].forEach(r => {
+      if (!r.name || r.name === 'Unassigned' || !r.timeMs || r.timeMs <= 0) return;
+      const event  = r.event  || getEventKey(heatName);
+      let   gender = r.gender || '';
+      if (!gender) {
+        const hs = heatName.toLowerCase();
+        if      (/\b(boys|male)\b/.test(hs))   gender = 'Boys';
+        else if (/\b(girls|female)\b/.test(hs)) gender = 'Girls';
+        else if (/mixed/.test(hs))              gender = 'Mixed';
+        else                                    gender = 'Open';
+      }
+      const grade      = r.grade || '';
+      const gradeLabel = grade ? `Grade ${grade}` : 'Open';
+      const divKey     = `${event}||${gender}||${gradeLabel}`;
+
+      if (!divMap[divKey]) {
+        divMap[divKey] = {
+          event, gender, grade: gradeLabel,
+          gradeNum: parseInt(grade) || 99,
+          evIdx: distOrder.indexOf(event) >= 0 ? distOrder.indexOf(event) : 999,
+          athletes: []
+        };
+      }
+      divMap[divKey].athletes.push({ ...r, heatName });
+    });
+  });
+
+  Object.values(divMap).forEach(div => {
+    div.top3 = [...div.athletes].sort((a,b) => a.timeMs - b.timeMs).slice(0, 3);
+  });
+  return divMap;
+}
+
+function renderEventWinners() {
+  const section = document.getElementById('event-winners-section');
+  const grid    = document.getElementById('winners-grid');
+  if (!section || !grid) return;
+  if (!Object.keys(results).length) { section.style.display = 'none'; return; }
+
+  const divMap = buildDivisionMap();
+  const divs   = Object.values(divMap).filter(d => d.top3.length > 0);
+  if (!divs.length) { section.style.display = 'none'; return; }
+
+  const genderOrder = { Boys:0, Girls:1, Mixed:2, Open:3 };
+  divs.sort((a,b) => {
+    if (a.evIdx !== b.evIdx)   return a.evIdx   - b.evIdx;
+    const ga = genderOrder[a.gender] ?? 9, gb = genderOrder[b.gender] ?? 9;
+    if (ga !== gb)             return ga - gb;
+    return a.gradeNum - b.gradeNum;
+  });
+
+  const medals     = ['🥇','🥈','🥉'];
+  const timeColors = ['#7a5a10','#4a5568','#7a4010'];
+  const genderColors = { Boys:'#1B2C52', Girls:'#8a2565', Mixed:'#4a3a8a', Open:'#4a5568' };
+
+  grid.innerHTML = divs.map(div => {
+    const gc = genderColors[div.gender] || '#4a5568';
+    const heatCount = [...new Set(div.top3.map(r => r.heatName))].length;
+    const rows = div.top3.map((r,i) => `
+      <div class="winner-row">
+        <div class="winner-medal">${medals[i]}</div>
+        <div class="winner-info">
+          <div class="winner-name">${r.name}</div>
+          <div class="winner-meta">${r.team||''}${r.team ? ' · ' : ''}${r.heatName}</div>
+        </div>
+        <div class="winner-time" style="color:${timeColors[i]}">${r.time}</div>
+      </div>`).join('');
+
+    return `
+      <div class="winner-card">
+        <div class="winner-card-header" style="border-left:4px solid ${gc};">
+          <div>
+            <div class="winner-event-name">${div.event}</div>
+            <div style="display:flex;gap:6px;align-items:center;margin-top:4px;flex-wrap:wrap;">
+              <span style="font-size:11px;font-weight:700;color:${gc};">${div.gender}</span>
+              <span style="font-size:11px;color:#5a6a88;font-weight:600;">·</span>
+              <span class="winner-heat-count">${div.grade}</span>
+              <span style="font-size:11px;color:#5a6a88;font-weight:600;">·</span>
+              <span class="winner-heat-count">${heatCount} heat${heatCount!==1?'s':''}</span>
+            </div>
+          </div>
+        </div>
+        ${rows}
+      </div>`;
+  }).join('');
+
+  section.style.display = '';
+}
+
+// ════════════════════════════════════════════
+// QR CODE (from first site - kept intact)
+// ════════════════════════════════════════════
+let spectatorBlobUrl = null;
+let qrInstance = null;
+
+function generateSpectatorHTML() {
+  const meetName = document.getElementById('meet-name')?.value || 'Track Meet';
+  const keys = Object.keys(results).sort();
+  if (!keys.length) return null;
+
+  const divMap = buildDivisionMap();
+  const genderOrder2 = { Boys:0, Girls:1, Mixed:2, Open:3 };
+  const distOrder2 = ['55M','60M','100M','200M','300M','400M','800M','1500M','1600M','Mile','3000M','3200M','5000M','10000M','Cross Country','Hurdles','Relay','Shot Put','Discus','Javelin','Hammer','Pole Vault','High Jump','Long Jump','Triple Jump'];
+
+  const sortedDivs = Object.values(divMap)
+    .filter(d => d.top3 && d.top3.length > 0)
+    .sort((a,b) => {
+      if (a.evIdx !== b.evIdx) return a.evIdx - b.evIdx;
+      const ga = genderOrder2[a.gender] ?? 9, gb = genderOrder2[b.gender] ?? 9;
+      if (ga !== gb) return ga - gb;
+      return a.gradeNum - b.gradeNum;
+    });
+
+  const medals = ['🥇','🥈','🥉'];
+  const genderColors = { Boys:'#1B2C52', Girls:'#8a2565', Mixed:'#4a3a8a', Open:'#4a5568' };
+  const genderBg    = { Boys:'rgba(27,44,82,0.08)', Girls:'rgba(138,37,101,0.08)', Mixed:'rgba(74,58,138,0.08)', Open:'rgba(74,85,105,0.08)' };
+
+  const divisionCards = sortedDivs.map(div => {
+    const gc = genderColors[div.gender] || '#4a5568';
+    const gb = genderBg[div.gender] || 'rgba(74,85,105,0.08)';
+    const heatCount = [...new Set(div.top3.map(r => r.heatName))].length;
+    const athleteRows = div.top3.map((r,i) => `
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid rgba(27,44,82,0.06);">
+        <div style="font-size:24px;width:36px;text-align:center;flex-shrink:0;">${medals[i]}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:15px;font-weight:700;color:#111B30;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.name}</div>
+          <div style="font-size:12px;color:#5a6a88;margin-top:2px;">${r.team||'Unattached'} · ${r.heatName}</div>
+        </div>
+        <div style="font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;color:${i===0?'#7a5a10':i===1?'#4a5568':'#7a4010'};flex-shrink:0;">${r.time}</div>
+      </div>`).join('');
+
+    return `
+    <div style="background:#fff;border-radius:14px;overflow:hidden;border:1px solid rgba(27,44,82,0.1);box-shadow:0 2px 8px rgba(17,27,48,0.08);break-inside:avoid;">
+      <div style="background:#F4F6FA;padding:13px 16px;border-left:4px solid ${gc};border-bottom:1px solid rgba(27,44,82,0.1);">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
+          <div style="font-size:18px;font-weight:800;color:#111B30;letter-spacing:-0.3px;">${div.event}</div>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:${gb};color:${gc};border:1px solid ${gc}55;">${div.gender}</span>
+            <span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:rgba(201,168,76,0.12);color:#7a5a10;border:1px solid rgba(201,168,76,0.3);">${div.grade}</span>
+          </div>
+        </div>
+        <div style="font-size:11px;color:#5a6a88;font-weight:600;margin-top:4px;">${heatCount} heat${heatCount!==1?'s':''} combined</div>
+      </div>
+      ${athleteRows}
+    </div>`;
+  }).join('');
+
+  let allRows = '';
+  keys.forEach(heat => {
+    results[heat].forEach(r => {
+      const medal = r.place===1?'🥇':r.place===2?'🥈':r.place===3?'🥉':'';
+      allRows += `<tr style="border-bottom:1px solid rgba(27,44,82,0.06)">
+        <td style="padding:9px 12px;font-size:12px;color:#5a6a88;">${heat}</td>
+        <td style="padding:9px 12px;font-size:13px;">${medal} #${r.place}</td>
+        <td style="padding:9px 12px;font-weight:700;font-variant-numeric:tabular-nums;color:#111B30;white-space:nowrap;">${r.time}</td>
+        <td style="padding:9px 12px;font-weight:600;color:#111B30;">${r.name}</td>
+        <td style="padding:9px 12px;color:#5a6a88;font-size:12px;">${r.team||'—'}</td>
+      </tr>`;
+    });
+  });
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${meetName} — Live Results</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,'Helvetica Neue',sans-serif;background:#EDEEF2;color:#111B30;padding:0 0 48px;}
+.header{background:#111B30;border-bottom:1px solid rgba(201,168,76,0.35);position:sticky;top:0;z-index:10;}
+.header-inner{max-width:760px;margin:0 auto;padding:16px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.header h1{font-size:19px;font-weight:700;color:#E8EAF0;letter-spacing:-0.3px;}
+.header-meta{font-size:11px;color:rgba(201,168,76,0.7);font-weight:600;}
+.wrap{max-width:760px;margin:0 auto;padding:20px 14px;}
+.section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.4px;color:#C9A84C;margin:28px 0 12px;display:flex;align-items:center;gap:8px;}
+.section-label::after{content:'';flex:1;height:1px;background:rgba(201,168,76,0.25);}
+.section-label:first-child{margin-top:0;}
+.div-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;}
+.results-table-wrap{background:#fff;border-radius:12px;overflow:hidden;border:1px solid rgba(27,44,82,0.1);box-shadow:0 1px 4px rgba(17,27,48,0.07);}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{padding:9px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:rgba(17,27,48,0.4);background:#FAFBFC;border-bottom:1px solid rgba(27,44,82,0.08);}
+.footer{text-align:center;font-size:11px;color:rgba(17,27,48,0.35);margin-top:28px;}
+@media(max-width:500px){.div-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-inner">
+    <h1>🏁 ${meetName}</h1>
+    <div class="header-meta">Updated ${new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</div>
+  </div>
+</div>
+<div class="wrap">
+  <div class="section-label">🏆 Division Winners</div>
+  <div class="div-grid">${divisionCards}</div>
+  <div class="section-label">📋 All Results</div>
+  <div class="results-table-wrap">
+    <table>
+      <thead><tr><th>Event / Heat</th><th>Place</th><th>Time</th><th>Athlete</th><th>Team</th></tr></thead>
+      <tbody>${allRows}</tbody>
+    </table>
+  </div>
+  <div class="footer">Track Timing App · ${new Date().toLocaleDateString()}</div>
+</div>
+</body>
+</html>`;
+}
+
+function getOrCreateSpectatorUrl() {
+  const html = generateSpectatorHTML();
+  if (!html) return null;
+  // Use blob URL — most reliable across all environments (including Vercel)
+  if (spectatorBlobUrl) URL.revokeObjectURL(spectatorBlobUrl);
+  spectatorBlobUrl = URL.createObjectURL(new Blob([html], {type: 'text/html'}));
+  return spectatorBlobUrl;
+}
+
+function openSpectatorPage() {
+  const url = getOrCreateSpectatorUrl();
+  if (!url) { showToast('ℹ️','No results to share yet'); return; }
+  window.open(url, '_blank', 'noopener,noreferrer');
+}
+
+function downloadQR() {
+  const container = document.getElementById('qr-code-container');
+  if (!container) return;
+  const canvas = container.querySelector('canvas');
+  if (canvas) {
+    const link = document.createElement('a');
+    link.download = 'meet-results-qr.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    showToast('✓','QR code downloaded');
+  } else {
+    showToast('ℹ️','Save a heat first to generate the QR code');
+  }
+}
+
+function refreshQRCode() {
+  const container = document.getElementById('qr-code-container');
+  const statusEl  = document.getElementById('qr-status-text');
+  if (!container) return;
+  const url = getOrCreateSpectatorUrl();
+  if (!url) {
+    container.innerHTML = '<div style="width:150px;height:150px;display:flex;align-items:center;justify-content:center;color:#8a9ab5;font-size:11px;text-align:center;line-height:1.6;padding:10px;">Save a heat to<br>generate QR code</div>';
+    if (statusEl) statusEl.textContent = 'Save a heat to generate the QR code';
+    return;
+  }
+  if (typeof QRCode === 'undefined') {
+    container.innerHTML = '<div style="width:150px;height:150px;display:flex;align-items:center;justify-content:center;color:#8a9ab5;font-size:11px;text-align:center;padding:10px;line-height:1.6;">Loading QR library...</div>';
+    setTimeout(() => { if (typeof QRCode !== 'undefined') refreshQRCode(); }, 800);
+    return;
+  }
+  try {
+    // Clear previous
+    while (container.firstChild) container.removeChild(container.firstChild);
+    
+    // Create fresh QR directly in container (more reliable)
+    new QRCode(container, {
+      text: url,
+      width: 150,
+      height: 150,
+      colorDark: '#111B30',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+    
+    // Style the canvas after creation
+    setTimeout(() => {
+      const canvas = container.querySelector('canvas');
+      if (canvas) {
+        canvas.style.display = 'block';
+        canvas.style.borderRadius = '4px';
+      }
+      const heatCount = Object.keys(results).length;
+      if (statusEl) statusEl.textContent = `Live · ${heatCount} heat${heatCount !== 1 ? 's' : ''} recorded`;
+    }, 50);
+  } catch(e) {
+    container.innerHTML = '<div style="width:150px;height:150px;display:flex;align-items:center;justify-content:center;color:#8a9ab5;font-size:11px;text-align:center;padding:10px;">QR generation failed<br>Use "Open Results Page"</div>';
+    if (statusEl) statusEl.textContent = 'Use "Open Results Page" to share';
+  }
+}
+
+// ════════════════════════════════════════════
+// EVENT FILTER (from first site)
+// ════════════════════════════════════════════
+let activeEventFilter = 'all';
+
+function getEventFilterKey(h){const s=(h||'').toLowerCase();if(/\brelay\b/.test(s))return'Relay';if(/hurdle/.test(s))return'Hurdles';const m=s.match(/\b(\d+m)\b/);if(m)return m[1].toUpperCase();if(/mile/.test(s))return'Mile';if(/cross/.test(s))return'Cross Country';if(/shot/.test(s))return'Shot Put';if(/discus/.test(s))return'Discus';if(/javelin/.test(s))return'Javelin';if(/hammer/.test(s))return'Hammer';if(/pole/.test(s))return'Pole Vault';if(/high jump/.test(s))return'High Jump';if(/long jump/.test(s))return'Long Jump';if(/triple/.test(s))return'Triple Jump';return'Other';}
+
+function setEventFilter(key,btn){activeEventFilter=key;document.querySelectorAll('.filter-tab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');renderHeatsGrid();}
+
+function buildFilterTabs(heats){
+  const bar=document.getElementById('event-filter-bar');if(!bar)return;
+  const counts={};heats.forEach(h=>{const k=getEventFilterKey(h);counts[k]=(counts[k]||0)+1;});
+  const order=['55M','60M','100M','200M','300M','400M','800M','1500M','1600M','Mile','3000M','3200M','5000M','10000M','Cross Country','Hurdles','Relay','Shot Put','Discus','Javelin','Hammer','Pole Vault','High Jump','Long Jump','Triple Jump','Other'];
+  const keys=Object.keys(counts).sort((a,b)=>{const ia=order.indexOf(a),ib=order.indexOf(b);return(ia<0?999:ia)-(ib<0?999:ib);});
+  const total=heats.length;
+  let html=`<button class="filter-tab ${activeEventFilter==='all'?'active':''}" onclick="setEventFilter('all',this)">All Events<span class="filter-tab-count">${total}</span></button>`;
+  keys.forEach(k=>{const active=activeEventFilter===k?'active':'';html+=`<button class="filter-tab ${active}" onclick="setEventFilter('${k.replace(/'/g,"\\'")}',this)">${k}<span class="filter-tab-count">${counts[k]}</span></button>`;});
+  bar.innerHTML=html;
+}
+
+// ════════════════════════════════════════════
+// STATE (from first site + sync additions)
+// ════════════════════════════════════════════
+let athletes=[], results={}, currentHeat=null, currentAthletes=[], recordedFinishes=[], otherDivisionAthletes=[];
+let isRunning=false, startTime=0, pausedTime=0, timerInterval=null;
+let settings={autoAssign:true,sound:true,gunSensitivity:0.28};
+let collapsedGroups={}, athletesTableCollapsed=false;
+
+// ════════════════════════════════════════════
+// SUPABASE MANUAL SYNC (timers run independently per device — use Sync button to share athletes/results)
+// ════════════════════════════════════════════
+function meetSlug() {
+  return document.getElementById('meet-name').value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'default-meet';
+}
+
+function pushState() {
+  // Manual sync version — only shares athletes & results (timers stay 100% local per device)
+  if (!sbClient) return;
+  const state = {
+    athletes: athletes,
+    results: results
+  };
+  const updatedAt = new Date().toISOString();
+  lastSeenUpdatedAt = updatedAt;
+  sbClient.from('tracktap_sessions')
+    .upsert({ id: meetSlug(), state: state, updated_at: updatedAt }, { onConflict: 'id' })
+    .then(res => { if (res.error) console.warn('pushState error:', res.error); });
+}
+
+function manualSync() {
+  if (!sbClient) { showToast('🚫', 'Supabase not connected'); return; }
+  // 1. Push our current athletes & results to cloud
+  pushState();
+  // 2. Pull latest from cloud and safely merge (never touches your active timer)
+  sbClient.from('tracktap_sessions')
+    .select('state, updated_at')
+    .eq('id', meetSlug())
+    .maybeSingle()
+    .then(res => {
+      if (res.error || !res.data || !res.data.state) {
+        showToast('✓', 'Pushed your data — no new updates from others');
+        return;
+      }
+      lastSeenUpdatedAt = res.data.updated_at;
+      mergeRemoteState(res.data.state);
+      showToast('✓', 'Synced successfully with other devices');
+    })
+    .catch(err => {
+      console.warn('manualSync error:', err);
+      showToast('⚠️', 'Sync failed — check your connection');
+    });
+}
+
+function subscribeRealtime() {
+  if (!sbClient) return;
+  unsubscribeRealtime();
+  const slug = meetSlug();
+  realtimeChannel = sbClient
+    .channel('db-' + slug)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'tracktap_sessions' }, function(payload) {
+      if (!payload.new || payload.new.id !== slug) return;
+      if (payload.new.updated_at === lastSeenUpdatedAt) return;
+      lastSeenUpdatedAt = payload.new.updated_at;
+      if (payload.new.state) mergeRemoteState(payload.new.state);
+    })
+    .subscribe(status => {
+      if (status === 'SUBSCRIBED') { setSyncStatus('synced'); fetchCurrentState(); }
+      if (status === 'CLOSED' || status === 'CHANNEL_ERROR') setSyncStatus('error');
+    });
+}
+
+function unsubscribeRealtime() {
+  if (realtimeChannel && sbClient) { sbClient.removeChannel(realtimeChannel); realtimeChannel = null; }
+}
+
+function fetchCurrentState() {
+  if (!sbClient) return;
+  sbClient.from('tracktap_sessions')
+    .select('state, updated_at')
+    .eq('id', meetSlug())
+    .maybeSingle()
+    .then(res => {
+      if (res.error || !res.data) return;
+      lastSeenUpdatedAt = res.data.updated_at;
+      if (res.data.state) mergeRemoteState(res.data.state);
+    });
+}
+
+function startPolling() {
+  if (pollInterval) clearInterval(pollInterval);
+  pollInterval = setInterval(() => {
+    if (!syncEnabled || !sbClient) return;
+    sbClient.from('tracktap_sessions')
+      .select('state, updated_at')
+      .eq('id', meetSlug())
+      .maybeSingle()
+      .then(res => {
+        if (res.error || !res.data) return;
+        if (res.data.updated_at === lastSeenUpdatedAt) return;
+        lastSeenUpdatedAt = res.data.updated_at;
+        if (res.data.state) mergeRemoteState(res.data.state);
+      });
+  }, 1000);
+}
+
+function mergeRemoteState(state) {
+  if (!state) return;
+  // Safe merge — never overwrites active local timer or current heat
+  // Athletes: add any new ones from remote (match by heat + lane + name)
+  const localKeys = new Set(athletes.map(a => `${a.heat}|${a.lane}|${(a.name||'').toLowerCase().trim()}`));
+  let addedAthletes = 0;
+  (state.athletes || []).forEach(ra => {
+    const key = `${ra.heat}|${ra.lane}|${(ra.name||'').toLowerCase().trim()}`;
+    if (!localKeys.has(key)) {
+      ra.id = 'sync-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,8);
+      athletes.push(ra);
+      localKeys.add(key);
+      addedAthletes++;
+    }
+  });
+  if (addedAthletes > 0) showToast('👥', `Added ${addedAthletes} new athlete(s) from other device`);
+
+  // Results: add heats that remote has but we don't (keep our local timing work)
+  let addedHeats = 0;
+  Object.keys(state.results || {}).forEach(h => {
+    if (!results[h]) {
+      results[h] = state.results[h];
+      addedHeats++;
+    }
+  });
+  if (addedHeats > 0) showToast('🏆', `Synced ${addedHeats} new heat result(s)`);
+
+  saveToStorage();
+  renderAthletesTable(); renderHeatsGrid(); renderResults();
+}
+
+// ════════════════════════════════════════════
+// LOCAL STORAGE (from first site)
+// ════════════════════════════════════════════
+function saveToStorage(){localStorage.setItem('tt_ath_v3',JSON.stringify(athletes));localStorage.setItem('tt_res_v3',JSON.stringify(results));localStorage.setItem('tt_set_v3',JSON.stringify(settings));}
+function loadFromStorage(){try{const a=localStorage.getItem('tt_ath_v3');if(a)athletes=JSON.parse(a);const r=localStorage.getItem('tt_res_v3');if(r)results=JSON.parse(r);const s=localStorage.getItem('tt_set_v3');if(s)settings={...settings,...JSON.parse(s)};}catch(e){}}
+function saveMeetName(){localStorage.setItem('tt_meet',document.getElementById('meet-name').value.trim());}
+function loadMeetName(){const n=localStorage.getItem('tt_meet');if(n)document.getElementById('meet-name').value=n;}
+
+// ════════════════════════════════════════════
+// SUPABASE INIT (auto-connect on load)
+// ════════════════════════════════════════════
+function initSupabase() {
+  if (!SUPABASE_URL || !SUPABASE_KEY) { setSyncStatus('offline'); return; }
+  setSyncStatus('connecting');
+
+  if (typeof window.supabase !== 'undefined') {
+    sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    finishSupabaseInit();
+    return;
+  }
+  const script = document.createElement('script');
+  script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js';
+  script.onload = () => {
+    sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    finishSupabaseInit();
+  };
+  script.onerror = () => {
+    setSyncStatus('error');
+    showToast('🚫', 'Could not load Supabase SDK');
+  };
+  document.head.appendChild(script);
+}
+
+function finishSupabaseInit() {
+  sbClient.from('tracktap_sessions').select('id').limit(1)
+    .then(res => {
+      if (res.error) {
+        setSyncStatus('error');
+        showToast('🚫', 'DB error — run the SQL setup in Supabase');
+        return;
+      }
+      syncEnabled = true;
+      setSyncStatus('synced');
+      document.getElementById('setup-banner').style.display = 'flex';
+      // No auto realtime or polling — manual Sync button only (prevents timer interruptions)
+      showToast('✓', 'Supabase connected — tap Sync to share data');
+    })
+    .catch(err => {
+      setSyncStatus('error');
+      showToast('🚫', 'Connection failed');
+    });
+}
+
+function setSyncStatus(status) {
+  // Simple visual feedback in header dot
+  const dot = document.querySelector('.dot');
+  if (!dot) return;
+  if (status === 'synced') {
+    dot.style.background = '#2E9E58';
+    dot.style.boxShadow = '0 0 0 3px rgba(46,158,88,0.25)';
+  } else if (status === 'connecting') {
+    dot.style.background = '#c07a1a';
+  } else if (status === 'error') {
+    dot.style.background = '#c0392b';
+  } else {
+    dot.style.background = 'var(--gold)';
+  }
+}
+
+// ════════════════════════════════════════════
+// TIME & TIMER (from first site + pushState calls)
+// ════════════════════════════════════════════
+function formatTime(ms){if(!ms||ms<0)return'00:00.000';const m=Math.floor(ms/60000),s=Math.floor((ms%60000)/1000),ms3=Math.floor(ms%1000);return`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(ms3).padStart(3,'0')}`;}
+function getCurrentElapsed(){if(!startTime)return 0;return isRunning?Date.now()-startTime:pausedTime;}
+function updateTimerDisplay(){const el=document.getElementById('timer-display');if(el)el.textContent=formatTime(getCurrentElapsed());}
+
+function startTimer(){if(isRunning)return;startTime=startTime===0?Date.now():Date.now()-pausedTime;isRunning=true;timerInterval=setInterval(updateTimerDisplay,16);const btn=document.getElementById('start-btn');if(btn){btn.innerHTML=`<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 2l10 6-10 6V2z"/></svg> Running`;btn.disabled=true;btn.style.opacity='0.65';}document.getElementById('timer-container')?.classList.add('running');}
+function stopTimer(){if(!isRunning)return;clearInterval(timerInterval);isRunning=false;pausedTime=Date.now()-startTime;const btn=document.getElementById('start-btn');if(btn){btn.innerHTML=`<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 2l10 6-10 6V2z"/></svg> Resume`;btn.disabled=false;btn.style.opacity='1';}document.getElementById('timer-container')?.classList.remove('running');updateTimerDisplay();}
+function resetTimer(){clearInterval(timerInterval);isRunning=false;startTime=0;pausedTime=0;const el=document.getElementById('timer-display');if(el)el.textContent='00:00.000';const btn=document.getElementById('start-btn');if(btn){btn.innerHTML=`<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 2l10 6-10 6V2z"/></svg> Start`;btn.disabled=false;btn.style.opacity='1';}document.getElementById('timer-container')?.classList.remove('running');}
+
+// ════════════════════════════════════════════
+// GUN START (from second site - integrated)
+// ════════════════════════════════════════════
+let gunListening = false;
+let gunStream = null;
+let gunAnalyser = null;
+let gunAudioCtx = null;
+let gunAnimFrame = null;
+let gunCooldown = false;
+
+function toggleGunStart() {
+  if (isRunning) { showToast('ℹ️', 'Timer is already running'); return; }
+  gunListening ? stopGunListen() : startGunListen();
+}
+
+function startGunListen() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { setGunStatus('error','🚫 Mic not supported'); return; }
+  navigator.mediaDevices.getUserMedia({audio:true,video:false}).then(stream => {
+    gunStream = stream;
+    gunAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const src = gunAudioCtx.createMediaStreamSource(stream);
+    gunAnalyser = gunAudioCtx.createAnalyser();
+    gunAnalyser.fftSize = 256;
+    gunAnalyser.smoothingTimeConstant = 0.3;
+    src.connect(gunAnalyser);
+    gunListening = true;
+    document.getElementById('gun-btn').classList.add('listening');
+    document.getElementById('gun-label').textContent = 'Listening…';
+    setGunStatus('ready','🎙️ Listening for starting pistol');
+    loopGun();
+  }).catch(err => {
+    setGunStatus('error', err.name==='NotAllowedError' ? '🚫 Mic permission denied' : '🚫 Could not access mic');
+  });
+}
+
+function loopGun() {
+  if (!gunListening || !gunAnalyser) return;
+  const data = new Uint8Array(gunAnalyser.frequencyBinCount);
+  gunAnalyser.getByteTimeDomainData(data);
+  let sum = 0;
+  for (let i=0;i<data.length;i++){const v=(data[i]-128)/128;sum+=v*v;}
+  const rms = Math.sqrt(sum/data.length);
+  const fill = document.getElementById('gun-vol-fill');
+  if (fill) fill.style.width = Math.min(rms*400,100)+'%';
+  const sens = settings.gunSensitivity || 0.28;
+  if (!gunCooldown && rms > sens) {
+    gunCooldown = true;
+    stopGunListen();
+    startTimer();
+    showToast('🔫','Gun detected — timer started!');
+    setTimeout(()=>{gunCooldown=false;},1500);
+    return;
+  }
+  gunAnimFrame = requestAnimationFrame(loopGun);
+}
+
+function stopGunListen() {
+  gunListening = false;
+  if (gunAnimFrame){cancelAnimationFrame(gunAnimFrame);gunAnimFrame=null;}
+  if (gunStream){gunStream.getTracks().forEach(t=>t.stop());gunStream=null;}
+  if (gunAudioCtx){try{gunAudioCtx.close();}catch(e){}gunAudioCtx=null;}
+  gunAnalyser = null;
+  const btn = document.getElementById('gun-btn');
+  if (btn) btn.classList.remove('listening');
+  document.getElementById('gun-label').textContent = 'Gun Start';
+  const s = document.getElementById('gun-status');
+  if (s){s.className='gun-status hidden';s.innerHTML='';}
+}
+
+function setGunStatus(type, msg) {
+  const el = document.getElementById('gun-status');
+  if (!el) return;
+  el.className = 'gun-status '+type;
+  el.innerHTML = msg + (type==='ready' ? ' <div class="gun-vol-bar"><div class="gun-vol-fill" id="gun-vol-fill"></div></div>' : '');
+}
+
+// ════════════════════════════════════════════
+// TAP FINISH (from first site + pushState)
+// ════════════════════════════════════════════
+function tapFinish(e){const el=getCurrentElapsed();if(el===0){showToast('⚠️','Start the timer first');return;}if(e){const btn=document.getElementById('tap-btn');const rect=btn.getBoundingClientRect();const rip=document.createElement('span');rip.className='tap-ripple';const size=Math.max(rect.width,rect.height);rip.style.cssText=`width:${size}px;height:${size}px;left:${e.clientX-rect.left-size/2}px;top:${e.clientY-rect.top-size/2}px`;btn.appendChild(rip);setTimeout(()=>rip.remove(),450);}recordedFinishes.push({place:recordedFinishes.length+1,timeMs:el,athleteId:null});renderFinishesList();updateAssignedCount();if(settings.sound)playTap();if(navigator.vibrate)navigator.vibrate(30);document.getElementById('tap-count').textContent=recordedFinishes.length;if(settings.autoAssign&&currentAthletes.length>0){const unassigned=currentAthletes.filter(a=>!recordedFinishes.some(f=>f.athleteId===a.id));if(unassigned.length===1){setTimeout(()=>{const last=recordedFinishes[recordedFinishes.length-1];if(last&&!last.athleteId){last.athleteId=unassigned[0].id;renderFinishesList();renderAthletesList();updateAssignedCount();}},200);}}setTimeout(()=>{const l=document.getElementById('finishes-list');if(l)l.scrollTop=l.scrollHeight;},50);}
+function playTap(){try{const ctx=new(window.AudioContext||window.webkitAudioContext)();const osc=ctx.createOscillator(),g=ctx.createGain();osc.type='sine';osc.frequency.value=1047;g.gain.value=0.06;g.gain.linearRampToValueAtTime(0.001,ctx.currentTime+0.12);osc.connect(g);g.connect(ctx.destination);osc.start();osc.stop(ctx.currentTime+0.13);}catch(e){}}
+function clearFinishes(){if(!recordedFinishes.length)return;if(confirm('Clear all recorded times?')){recordedFinishes=[];renderFinishesList();updateAssignedCount();document.getElementById('tap-count').textContent='0';}}
+function assignToNextUnassigned(athleteId){const next=recordedFinishes.find(f=>!f.athleteId);if(!next){showToast('ℹ️','All places assigned.');return;}next.athleteId=athleteId;renderFinishesList();renderAthletesList();updateAssignedCount();}
+function assignAthlete(place,athleteId){if(!athleteId)return;const f=recordedFinishes.find(x=>x.place===place);if(f){f.athleteId=athleteId;renderFinishesList();renderAthletesList();updateAssignedCount();}}
+function unassignAthlete(place){const f=recordedFinishes.find(x=>x.place===place);if(f){f.athleteId=null;renderFinishesList();renderAthletesList();updateAssignedCount();}}
+function updateAssignedCount(){const el=document.getElementById('assigned-count'),np=document.getElementById('next-place');if(!el||!currentAthletes.length)return;const assigned=recordedFinishes.filter(f=>f.athleteId).length;el.textContent=`${assigned} of ${currentAthletes.length} assigned`;const nextIdx=recordedFinishes.findIndex(f=>!f.athleteId);if(np){if(nextIdx>=0)np.textContent=`Next: #${nextIdx+1}`;else if(recordedFinishes.length>0)np.textContent='All done ✓';else np.textContent='';}}
+
+// ════════════════════════════════════════════
+// GROUPS & TABLE (from first site)
+// ════════════════════════════════════════════
+function toggleGroup(key){collapsedGroups[key]=!collapsedGroups[key];const body=document.getElementById('grp-'+btoa(key).replace(/=/g,''));const chv=document.getElementById('chv-'+btoa(key).replace(/=/g,''));if(body){if(collapsedGroups[key]){body.classList.add('collapsed');chv?.classList.remove('open');}else{body.classList.remove('collapsed');chv?.classList.add('open');}}}
+function toggleAthletesTable(){athletesTableCollapsed=!athletesTableCollapsed;const c=document.getElementById('athletes-table-content'),chv=document.getElementById('athletes-chevron');if(c){if(athletesTableCollapsed){c.classList.add('collapsed');chv?.classList.remove('open');}else{c.classList.remove('collapsed');chv?.classList.add('open');}}}
+
+function renderAthletesList(){
+  const container=document.getElementById('athletes-list');if(!container)return;
+  if(!currentAthletes.length){container.innerHTML=`<div class="empty-state"><div class="empty-sub">No athletes loaded</div></div>`;return;}
+  const groups={};currentAthletes.forEach(a=>{const g=a.gender||'Mixed',gr=a.grade?`Grade ${a.grade}`:'';const key=[g,gr].filter(Boolean).join(' · ');if(!groups[key])groups[key]=[];groups[key].push(a);});
+  const order=['Boys','Girls','Mixed'];const keys=Object.keys(groups).sort((a,b)=>{const ga=a.split(' · ')[0],gb=b.split(' · ')[0];return(order.indexOf(ga)||99)-(order.indexOf(gb)||99);});
+  let html='';
+  keys.forEach(key=>{
+    const safeId=btoa(key).replace(/=/g,'');const collapsed=!!collapsedGroups[key];const count=groups[key].length;const assignedCount=groups[key].filter(a=>recordedFinishes.some(f=>f.athleteId===a.id)).length;
+    html+=`<div class="group-header" onclick="toggleGroup('${key.replace(/'/g,"\\'")}')"><div class="group-header-left"><span class="group-chevron ${collapsed?'':'open'}" id="chv-${safeId}">▶</span><span class="group-label">${key}</span><span class="group-count">${assignedCount}/${count}</span></div></div><div class="group-body ${collapsed?'collapsed':''}" id="grp-${safeId}" style="max-height:${collapsed?'0':count*65+'px'};">`;
+    groups[key].forEach(ath=>{
+      const assigned=recordedFinishes.some(f=>f.athleteId===ath.id);
+      const woTag=ath.walkOn?`<span style="font-size:9px;font-weight:700;padding:2px 6px;border-radius:8px;background:rgba(255,149,0,0.12);color:#b36a00;border:0.5px solid rgba(255,149,0,0.3);margin-right:4px;flex-shrink:0;">WALK-ON</span>`:'';
+      html+=`<div class="athlete-item ${assigned?'assigned':''}" onclick="assignToNextUnassigned('${ath.id}')"><div class="ath-lane">${ath.lane}</div><div class="ath-info"><div class="ath-name">${ath.name}</div><div class="ath-team">${ath.team}</div></div>${woTag}${assigned?'<span class="ath-badge">✓</span>':''}</div>`;
+    });
+    html+=`</div>`;
+  });
+  container.innerHTML=html;
+
+  // Add "Other athletes in this division" section
+  if (otherDivisionAthletes && otherDivisionAthletes.length > 0) {
+    const otherDiv = document.createElement('div');
+    otherDiv.style.marginTop = '12px';
+    otherDiv.innerHTML = `
+      <div class="group-header" style="background:rgba(201,168,76,0.08);cursor:default;">
+        <div class="group-header-left">
+          <span class="group-label" style="color:#7a5a10;">Other athletes in this division</span>
+          <span class="group-count">${otherDivisionAthletes.length}</span>
+        </div>
+      </div>
+      <div style="max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;">
+        ${otherDivisionAthletes.map(ath => `
+          <div class="athlete-item" style="border-bottom:1px solid var(--border2);" onclick="addAthleteToCurrentHeat('${ath.id}')">
+            <div class="ath-lane">${ath.lane}</div>
+            <div class="ath-info">
+              <div class="ath-name">${ath.name}</div>
+              <div class="ath-team">${ath.team} · ${ath.heat}</div>
+            </div>
+            <span style="font-size:9px;font-weight:700;padding:2px 6px;border-radius:8px;background:rgba(201,168,76,0.15);color:#7a5a10;flex-shrink:0;">ADD</span>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    container.appendChild(otherDiv);
+  }
+}
+
+function renderFinishesList(){
+  const c=document.getElementById('finishes-list');if(!c)return;
+  if(!recordedFinishes.length){c.innerHTML=`<div class="empty-state"><div class="empty-icon">🏁</div><div class="empty-title">No finishes yet</div><div class="empty-sub">Tap the button as each athlete crosses</div></div>`;return;}
+  const leader=recordedFinishes[0].timeMs;const available=currentAthletes.filter(a=>!recordedFinishes.some(f=>f.athleteId===a.id));
+  let html='';
+  recordedFinishes.forEach((fin,i)=>{
+    const delta=fin.timeMs-leader,deltaStr=i===0?'Leader':`+${(delta/1000).toFixed(3)}s`;const pc=['place-1','place-2','place-3'][i]||'place-n';const ath=fin.athleteId?currentAthletes.find(a=>a.id===fin.athleteId):null;
+    let assignHtml='';if(ath){assignHtml=`<div class="finish-name">${ath.name}</div>`;}else{let opts=`<option value="">Select athlete…</option>`;available.forEach(a=>{opts+=`<option value="${a.id}">${a.name}</option>`;});assignHtml=`<select class="finish-select" onchange="assignAthlete(${fin.place},this.value)">${opts}</select>`;}
+    html+=`<div class="finish-row"><div class="place-num ${pc}">#${fin.place}</div><div><div class="finish-time">${formatTime(fin.timeMs)}</div><div class="finish-delta">${deltaStr}</div></div><div class="finish-assign" style="display:flex;align-items:center;gap:6px;">${assignHtml}${ath?`<button class="btn-unassign" onclick="unassignAthlete(${fin.place})" title="Unassign">✕</button>`:''}</div></div>`;
+  });
+  c.innerHTML=html;
+}
+
+function renderAthletesTable(){
+  const tbody=document.getElementById('athletes-table-body'),countEl=document.getElementById('athlete-count');if(!tbody)return;if(countEl)countEl.textContent=athletes.length;
+  if(!athletes.length){tbody.innerHTML=`<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">👤</div><div class="empty-title">No athletes yet</div><div class="empty-sub">Upload a CSV or add athletes manually</div></div></td></tr>`;return;}
+  tbody.innerHTML=athletes.map(a=>`<tr><td style="font-size:13px;font-weight:500;color:#243660;">${a.heat}</td><td style="text-align:center;"><span class="lane-num">${a.lane}</span></td><td style="font-weight:600;font-size:14px;color:#111B30;">${a.name}</td><td style="font-size:13px;color:#5a6a88;">${a.team}</td><td style="text-align:right;"><button class="btn-del" onclick="deleteAthlete('${a.id}')">Remove</button></td></tr>`).join('');
+}
+
+function renderHeatsGrid(){
+  const sec=document.getElementById('heats-section');if(!sec)return;
+  const allHeats=[...new Set(athletes.map(a=>a.heat))];
+  if(!allHeats.length){sec.innerHTML=`<div class="card" style="padding:36px;text-align:center;border-style:dashed;"><div class="empty-icon">📋</div><div class="empty-sub">No heats yet — upload a CSV or add athletes manually</div></div>`;document.getElementById('event-filter-bar').innerHTML=`<button class="filter-tab active" onclick="setEventFilter('all',this)">All Events</button>`;return;}
+  buildFilterTabs(allHeats);
+  const filtered=activeEventFilter==='all'?allHeats:allHeats.filter(h=>getEventFilterKey(h)===activeEventFilter);
+  // Sort by Race Number if available, otherwise use default sort
+  let sorted = filtered;
+  const hasRaceNumbers = athletes.some(a => a.raceNumber);
+  if (hasRaceNumbers) {
+    sorted = [...filtered].sort((a, b) => {
+      const ra = athletes.find(x => x.heat === a)?.raceNumber || 999;
+      const rb = athletes.find(x => x.heat === b)?.raceNumber || 999;
+      return ra - rb;
+    });
+  } else {
+    sorted = sortHeats(filtered);
+  }
+  if(!sorted.length){sec.innerHTML=`<div class="card" style="padding:28px;text-align:center;"><div class="empty-sub">No heats match this filter</div></div>`;return;}
+  const groups=[];let lastEv=null;sorted.forEach(heat=>{const ev=getEventClass(heat);if(ev!==lastEv){groups.push({evClass:ev,label:EV_GROUP_NAMES[ev]||'Other',heats:[]});lastEv=ev;}groups[groups.length-1].heats.push(heat);});
+  sec.innerHTML=groups.map(group=>`
+    <div class="heats-group-label">${group.label}</div>
+    <div class="heats-grid">
+      ${group.heats.map(heat=>{
+        const count=athletes.filter(a=>a.heat===heat).length;
+        const done=!!results[heat];
+        const evClass=getEventClass(heat);
+        const hAthletes=athletes.filter(a=>a.heat===heat);
+        const isRaceGroup = hAthletes.some(a=>a.raceGroup);
+        const uniqueGenders = [...new Set(hAthletes.map(a=>a.gender).filter(Boolean))];
+        const uniqueGrades  = [...new Set(hAthletes.map(a=>a.grade).filter(Boolean))];
+        const gClass = isRaceGroup && uniqueGenders.length > 1 ? 'g-mixed' : getGenderClass(heat);
+        const evLabel=getEventLabel(heat);
+        const grades=uniqueGrades;
+        const safeHeat=heat.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+        let tagsHtml = '';
+        if (isRaceGroup && (uniqueGenders.length > 1 || uniqueGrades.length > 1)) {
+          tagsHtml = `<span class="heat-count-text" style="font-size:12px;">${count} athlete${count!==1?'s':''}</span>`;
+        } else {
+          tagsHtml = `<span class="heat-count-text" style="font-size:12px;">${count} athlete${count!==1?'s':''}</span>`;
+        }
+        const rgBadge = isRaceGroup ? `<div class="event-label" style="color:#4a3a8a;">Mixed Race</div>` : (evLabel ? `<div class="event-label">${evLabel}</div>` : '');
+        const firstRaceNum = hAthletes.find(a => a.raceNumber)?.raceNumber;
+        const raceNumBadge = firstRaceNum ? `<span style="font-size:13px;font-weight:800;color:#7a5a10;background:rgba(201,168,76,0.2);padding:2px 8px;border-radius:8px;">Race #${firstRaceNum}</span>` : '';
+        return `<div class="heat-card ${evClass} ${gClass}" onclick="loadHeat('${safeHeat}')"><div class="gender-bar"></div><div class="heat-card-body">${rgBadge}${raceNumBadge ? `<div style="margin-bottom:4px;">${raceNumBadge}</div>` : ''}<div class="heat-name">${heat}</div><div class="heat-footer"><div class="heat-tags">${tagsHtml}</div><div style="display:flex;gap:5px;align-items:center;">${done ? `<span class="heat-chip chip-done">Done</span><button onclick="event.stopPropagation();editHeat('${safeHeat}')" style="height:22px;padding:0 8px;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.4);border-radius:20px;font-family:inherit;font-size:10px;font-weight:700;color:#7a5a10;cursor:pointer;" title="Edit results">✏️</button>` : `<span class="heat-chip chip-start">Start</span>`}</div></div></div></div>`;
+      }).join('')}
+    </div>`).join('');
+}
+
+function renderResults(){
+  const c=document.getElementById('results-content'),masterTbody=document.getElementById('all-results-body'),countEl=document.getElementById('total-results-count');if(!c)return;
+  const keys=Object.keys(results).sort();
+  if(!keys.length){c.innerHTML=`<div class="empty-state" style="padding:60px 20px;"><div class="empty-icon">🏆</div><div class="empty-title">No results yet</div><div class="empty-sub">Complete a heat to see results</div></div>`;if(masterTbody)masterTbody.innerHTML=`<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:40px 20px;">No results recorded yet</td></tr>`;if(countEl)countEl.textContent='0';renderEventWinners();refreshQRCode();return;}
+  let allResults=[];keys.forEach(heat=>{results[heat].forEach(r=>{allResults.push({...r,heat});});});allResults.sort((a,b)=>a.heat!==b.heat?a.heat.localeCompare(b.heat):a.place-b.place);
+  if(masterTbody)masterTbody.innerHTML=allResults.map(r=>`<tr><td style="font-size:12px;color:#243660;">${r.heat}</td><td style="text-align:center;"><span class="place-num ${r.place<=3?['place-1','place-2','place-3'][r.place-1]:'place-n'}" style="display:inline-flex;">#${r.place}</span></td><td style="font-variant-numeric:tabular-nums;font-weight:600;font-size:15px;color:#111B30;">${r.time}</td><td style="font-weight:600;color:#111B30;">${r.name}</td><td style="color:#5a6a88;font-size:13px;">${r.team}</td><td style="text-align:center;color:#5a6a88;font-size:13px;">${r.lane||'—'}</td></tr>`).join('');
+  if(countEl)countEl.textContent=allResults.length;
+  c.innerHTML=keys.map(heat=>{
+    const safeHeat=heat.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    return `<div class="result-heat">
+      <div class="result-heat-title">
+        ${heat}
+        <span class="count-pill">${results[heat].length} finishers</span>
+        <button onclick="editHeat('${safeHeat}')" style="margin-left:auto;height:28px;padding:0 12px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.35);border-radius:20px;font-family:inherit;font-size:12px;font-weight:600;color:#7a5a10;cursor:pointer;display:flex;align-items:center;gap:5px;" onmouseover="this.style.background='rgba(201,168,76,0.2)'" onmouseout="this.style.background='rgba(201,168,76,0.1)'">
+          <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2l3 3-9 9H2v-3L11 2z"/></svg>
+          Edit
+        </button>
+      </div>
+      <div class="card"><div style="overflow-x:auto;"><table><thead><tr><th style="width:60px;">Place</th><th>Time</th><th>Athlete</th><th>Team</th><th style="width:70px;text-align:center;">Lane</th></tr></thead>
+      <tbody>${results[heat].map(r=>`<tr><td><span class="place-num ${r.place<=3?['place-1','place-2','place-3'][r.place-1]:'place-n'}" style="display:inline-flex;">#${r.place}</span></td><td style="font-variant-numeric:tabular-nums;font-weight:600;font-size:15px;color:#111B30;">${r.time}</td><td style="font-weight:600;color:#111B30;">${r.name}</td><td style="color:#5a6a88;font-size:13px;">${r.team}</td><td style="text-align:center;color:#5a6a88;font-size:13px;">${r.lane||'—'}</td></tr>`).join('')}</tbody>
+      </table></div></div>
+    </div>`;
+  }).join('');
+  renderEventWinners();
+  refreshQRCode();
+}
+
+// ════════════════════════════════════════════
+// LOAD / SAVE HEAT (from first site + pushState)
+// ════════════════════════════════════════════
+function loadHeat(heat){
+  currentHeat = heat;
+  currentAthletes = athletes.filter(a => a.heat === heat).sort((a,b) => a.lane - b.lane);
+  recordedFinishes = [];
+  collapsedGroups = {};
+
+  // Find other athletes in same event + gender + grade (different heat)
+  const current = currentAthletes[0] || {};
+  otherDivisionAthletes = athletes.filter(a => 
+    a.heat !== heat &&
+    a.event === current.event &&
+    a.gender === current.gender &&
+    a.grade === current.grade
+  ).sort((a,b) => a.name.localeCompare(b.name));
+
+  const sec = document.getElementById('timer-section');
+  sec.classList.remove('hidden');
+  document.getElementById('heat-title').textContent = heat;
+
+  const raceBadge = document.getElementById('race-number-badge');
+  const firstAth = currentAthletes[0];
+  if (raceBadge && firstAth && firstAth.raceNumber) {
+    raceBadge.textContent = `Race #${firstAth.raceNumber}`;
+    raceBadge.style.display = 'inline-block';
+  } else if (raceBadge) {
+    raceBadge.style.display = 'none';
+  }
+
+  document.getElementById('tap-count').textContent = '0';
+  renderAthletesList();
+  renderFinishesList();
+  updateAssignedCount();
+  resetTimer();
+
+  // Initialize quick gun sensitivity slider
+  const quickSlider = document.getElementById('gun-sens-quick');
+  const quickVal = document.getElementById('gun-sens-quick-val');
+  if (quickSlider && quickVal) {
+    const sens = settings.gunSensitivity || 0.28;
+    quickSlider.value = sens;
+    quickVal.textContent = sens.toFixed(2);
+  }
+
+  setTimeout(() => sec.scrollIntoView({behavior:'smooth', block:'start'}), 80);
+}
+
+let pendingEditHeat = null;
+
+function editHeat(heat) {
+  if (!results[heat]) { showToast('⚠️','No saved results for this heat'); return; }
+  pendingEditHeat = heat;
+  document.getElementById('edit-modal-heat-name').textContent = heat;
+  document.getElementById('edit-modal').classList.add('open');
+}
+
+function hideEditModal() {
+  document.getElementById('edit-modal').classList.remove('open');
+  pendingEditHeat = null;
+}
+
+function confirmEditHeat() {
+  const heat = pendingEditHeat;
+  hideEditModal();
+  if (!heat || !results[heat]) return;
+
+  currentHeat = heat;
+  currentAthletes = athletes.filter(a => a.heat === heat).sort((a,b) => a.lane - b.lane);
+  collapsedGroups = {};
+
+  recordedFinishes = results[heat].map(r => ({
+    place:     r.place,
+    timeMs:    r.timeMs,
+    athleteId: r.athleteId || null,
+  }));
+
+  clearInterval(timerInterval);
+  isRunning = false;
+  const lastTime = recordedFinishes.length ? recordedFinishes[recordedFinishes.length - 1].timeMs : 0;
+  startTime = 0;
+  pausedTime = lastTime;
+
+  const el = document.getElementById('timer-display');
+  if (el) el.textContent = formatTime(lastTime);
+
+  const btn = document.getElementById('start-btn');
+  if (btn) {
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 2l10 6-10 6V2z"/></svg> Resume`;
+    btn.disabled = false;
+    btn.style.opacity = '1';
+  }
+  document.getElementById('timer-container')?.classList.remove('running');
+
+  const sec = document.getElementById('timer-section');
+  sec.classList.remove('hidden');
+  document.getElementById('heat-title').textContent = heat + ' ✏️';
+  document.getElementById('tap-count').textContent = recordedFinishes.length;
+
+  renderAthletesList();
+  renderFinishesList();
+  updateAssignedCount();
+  pushState();
+
+  setTimeout(() => sec.scrollIntoView({behavior:'smooth', block:'start'}), 80);
+  showToast('✏️', `${recordedFinishes.length} finish${recordedFinishes.length!==1?'es':''} loaded — edit and save`);
+}
+
+function closeTimer(){document.getElementById('timer-section').classList.add('hidden');currentHeat=null;currentAthletes=[];recordedFinishes=[];resetTimer();pushState();}
+
+function saveAndClearHeat(){
+  if(!currentHeat||!recordedFinishes.length){showToast('⚠️','Record at least one finish time first.');return;}
+  const unassigned=recordedFinishes.filter(f=>!f.athleteId).length;
+  results[currentHeat]=recordedFinishes.map(f=>{
+    const a=f.athleteId?currentAthletes.find(x=>x.id===f.athleteId):null;
+    return{
+      place:f.place, timeMs:f.timeMs, time:formatTime(f.timeMs),
+      athleteId:f.athleteId,
+      name:  a ? a.name  : 'Unassigned',
+      team:  a ? a.team  : '',
+      lane:  a ? a.lane  : '',
+      event:  a ? (a.event  || currentHeat) : currentHeat,
+      gender: a ? (a.gender || '')          : '',
+      grade:  a ? (a.grade  || '')          : '',
+    };
+  });
+  saveToStorage();
+  if(results[currentHeat].every(r=>r.name!=='Unassigned')&&results[currentHeat].length>=3) launchConfetti();
+  document.getElementById('timer-section').classList.add('hidden');
+  currentHeat=null; recordedFinishes=[];
+  renderHeatsGrid(); renderResults();
+  pushState();
+  showToast('✓', unassigned > 0 ? `Saved — ${unassigned} finish${unassigned!==1?'es':''} unassigned` : 'Results saved');
+}
+
+function launchConfetti(){const colors=['#C9A84C','#1B2C52','#E8EAF0','#2E9E58','#8a2565'];for(let i=0;i<50;i++){setTimeout(()=>{const el=document.createElement('div');el.style.cssText=`position:fixed;left:${Math.random()*100}vw;top:-10px;width:8px;height:8px;border-radius:${Math.random()>.5?'50%':'2px'};background:${colors[i%colors.length]};z-index:9999;pointer-events:none;transition:transform 1.4s ease,opacity 1.2s ease`;document.body.appendChild(el);setTimeout(()=>{el.style.transform=`translateY(${innerHeight+20}px) rotate(${Math.random()*360}deg)`;el.style.opacity='0';},30);setTimeout(()=>el.remove(),1500);},i*16);}}
+
+function addAthlete(){const heat=document.getElementById('add-heat').value.trim()||'Heat 1';const lane=parseInt(document.getElementById('add-lane').value)||99;const name=document.getElementById('add-name').value.trim();const team=document.getElementById('add-team').value.trim()||'Unattached';if(!name){document.getElementById('add-name').focus();return;}athletes.push({id:'a-'+Date.now().toString(36),heat,lane,name,team});saveToStorage();hideAddModal();renderAthletesTable();renderHeatsGrid();pushState();showToast('✓',`Added ${name}`);}
+function showAddModal(){document.getElementById('add-modal').classList.add('open');setTimeout(()=>document.getElementById('add-name').focus(),100);}
+function hideAddModal(){document.getElementById('add-modal').classList.remove('open');}
+function deleteAthlete(id){athletes=athletes.filter(a=>a.id!==id);saveToStorage();renderAthletesTable();renderHeatsGrid();pushState();showToast('✓','Athlete removed');}
+
+function handleCSVUpload(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    let parsed=parseCSV(ev.target.result);if(!parsed.length){showToast('⚠️','No valid rows found in CSV');return;}
+    parsed = assignRaceNumbers(parsed);
+    athletes=athletes.concat(parsed);saveToStorage();renderAthletesTable();renderHeatsGrid();pushState();showToast('✓',`Imported ${parsed.length} athletes`);
+  };
+  reader.readAsText(file);e.target.value='';
+}
+
+function parseCSV(text){
+  const lines=text.trim().split(/\r?\n/);if(lines.length<2)return[];
+  function parseLine(line){const result=[];let current='',inQuotes=false;for(let i=0;i<line.length;i++){const char=line[i];if(char==='"'){inQuotes=!inQuotes;}else if(char===','&&!inQuotes){result.push(current.trim());current='';}else{current+=char;}}result.push(current.trim());return result;}
+  const headers=parseLine(lines[0]).map(h=>h.toLowerCase().trim());
+  return lines.slice(1).filter(l=>l.trim()).map((line,i)=>{
+    const vals=parseLine(line),row={};headers.forEach((h,idx)=>row[h]=vals[idx]||'');
+    const event     = row.event||row['event name']||row.race||'';
+    const heatNum   = row.heat||row['heat number']||row['heat #']||'';
+    const grade     = row.grade||row['grade level']||row.gr||'';
+    const gender    = row.gender||row.sex||'';
+    const raceGroup = row.race_group||row.racegroup||row['race group']||row.group||'';
+    // More robust race number matching
+    let raceNum = null;
+    for (const key in row) {
+      if (key.includes('race') && (key.includes('num') || key.includes('#') || key === 'race')) {
+        const val = parseInt(row[key]);
+        if (!isNaN(val) && val > 0) {
+          raceNum = val;
+          break;
+        }
+      }
+    }
+    const lane      = parseInt(row.lane||row.ln||'99')||99;
+    const name      = row.name||row.athlete||row['athlete name']||'';
+    if(!name) return null;
+    const school = row.school||row.team||row.club||'Unattached';
+    // Clean heat label: "100M — Heat 1 — 6G"
+    let heatLabel;
+    if (raceGroup) {
+      heatLabel = raceGroup;
+    } else {
+      heatLabel = event || 'Event';
+      if (event && heatNum) heatLabel = `${event} — Heat ${heatNum}`;
+      else if (heatNum)     heatLabel = `Heat ${heatNum}`;
+      const g = gender ? gender.charAt(0).toUpperCase() : '';
+      const gr = grade ? grade : '';
+      const cleanDiv = (g || gr) ? ` — ${gr}${g}` : '';
+      heatLabel += cleanDiv;
+    }
+    return {
+      id:        `csv-${Date.now().toString(36)}-${i}`,
+      heat:      heatLabel,
+      lane,
+      name,
+      team:      school,
+      event:     event || heatLabel,
+      grade,
+      gender:    gender ? gender.charAt(0).toUpperCase() + gender.slice(1).toLowerCase() : '',
+      raceGroup: raceGroup || null,
+      raceNumber: raceNum,             // NEW: Race number for start line
+    };
+  }).filter(Boolean);
+}
+
+function clearAllData(){athletes=[];results={};localStorage.removeItem('tt_ath_v3');localStorage.removeItem('tt_res_v3');renderAthletesTable();renderHeatsGrid();renderResults();document.getElementById('timer-section').classList.add('hidden');pushState();showToast('✓','Roster cleared');}
+function exportAllResults(){if(!Object.keys(results).length){showToast('ℹ️','No results to export');return;}let csv='Heat,Place,Time (s),Athlete,Team,Lane\n';Object.keys(results).sort().forEach(heat=>{results[heat].forEach(r=>{csv+=`"${heat}",${r.place},${(r.timeMs/1000).toFixed(3)},"${r.name}","${r.team}",${r.lane||''}\n`;});});const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`tracktap_${new Date().toISOString().slice(0,10)}.csv`;a.click();}
+function saveProject(){const data={athletes,results,meetName:document.getElementById('meet-name').value.trim(),settings,version:'1.0'};const json=JSON.stringify(data,null,2);const blob=new Blob([json],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;const meet=document.getElementById('meet-name').value.trim().replace(/[^a-z0-9]/gi,'_');a.download=`tracktap_${meet||'project'}_${new Date().toISOString().slice(0,10)}.json`;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);navigator.clipboard.writeText(json).then(()=>showToast('✓','Saved + copied to clipboard')).catch(()=>showToast('✓','Project saved to file'));}
+function loadProject(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=function(ev){try{const data=JSON.parse(ev.target.result);if(data.athletes&&Array.isArray(data.athletes))athletes=data.athletes;if(data.results&&typeof data.results==='object')results=data.results;if(data.settings)settings={...settings,...data.settings};if(data.meetName){document.getElementById('meet-name').value=data.meetName;localStorage.setItem('tt_meet',data.meetName);}saveToStorage();renderAthletesTable();renderHeatsGrid();renderResults();pushState();showToast('✓',`Project loaded: ${athletes.length} athletes`);}catch(err){showToast('⚠️','Invalid project file');}};reader.readAsText(file);e.target.value='';}
+
+function showSettings(){
+  document.getElementById('settings-modal').classList.add('open');
+  document.getElementById('auto-assign-toggle').checked=settings.autoAssign;
+  document.getElementById('sound-toggle').checked=settings.sound;
+  const sens = settings.gunSensitivity || 0.28;
+  const range = document.getElementById('gun-sens');
+  if(range){
+    range.value = sens;
+    document.getElementById('gun-sens-val').textContent = sens.toFixed(2);
+  }
+}
+function hideSettings(){document.getElementById('settings-modal').classList.remove('open');}
+function updateSettings(){settings.autoAssign=document.getElementById('auto-assign-toggle').checked;settings.sound=document.getElementById('sound-toggle').checked;saveToStorage();}
+
+function updateGunSensitivity(){
+  const val = parseFloat(document.getElementById('gun-sens').value);
+  settings.gunSensitivity = val;
+  document.getElementById('gun-sens-val').textContent = val.toFixed(2);
+  // Also update quick slider if present
+  const quick = document.getElementById('gun-sens-quick');
+  const quickVal = document.getElementById('gun-sens-quick-val');
+  if(quick) quick.value = val;
+  if(quickVal) quickVal.textContent = val.toFixed(2);
+  saveToStorage();
+}
+
+function updateGunSensitivityQuick(val) {
+  const num = parseFloat(val);
+  settings.gunSensitivity = num;
+  // Update settings modal slider if open
+  const mainSlider = document.getElementById('gun-sens');
+  const mainVal = document.getElementById('gun-sens-val');
+  if(mainSlider) mainSlider.value = num;
+  if(mainVal) mainVal.textContent = num.toFixed(2);
+  // Update quick display
+  const quickVal = document.getElementById('gun-sens-quick-val');
+  if(quickVal) quickVal.textContent = num.toFixed(2);
+  saveToStorage();
+}
+function showWalkOnModal(){if(!currentHeat)return;document.getElementById('walkon-heat-label').textContent=`Adding to: ${currentHeat}`;['wo-name','wo-lane','wo-team','wo-grade'].forEach(id=>document.getElementById(id).value='');document.getElementById('walkon-modal').classList.add('open');setTimeout(()=>document.getElementById('wo-name').focus(),120);}
+function hideWalkOnModal(){document.getElementById('walkon-modal').classList.remove('open');}
+function addWalkOn(){const name=document.getElementById('wo-name').value.trim();if(!name){document.getElementById('wo-name').focus();return;}const lane=parseInt(document.getElementById('wo-lane').value)||99;const team=document.getElementById('wo-team').value.trim()||'Unattached';const grade=document.getElementById('wo-grade').value.trim()||'';const gender=currentHeat.includes('Boys')?'Boys':currentHeat.includes('Girls')?'Girls':'';const newAth={id:'wo-'+Date.now().toString(36),heat:currentHeat,lane,name,team,grade,gender,walkOn:true};athletes.push(newAth);currentAthletes.push(newAth);currentAthletes.sort((a,b)=>a.lane-b.lane);saveToStorage();renderAthletesTable();renderHeatsGrid();renderAthletesList();updateAssignedCount();hideWalkOnModal();pushState();showToast('🏃',`${name} added as walk-on`);}
+
+function addAthleteToCurrentHeat(athleteId) {
+  const ath = athletes.find(a => a.id === athleteId);
+  if (!ath || !currentHeat) return;
+
+  // Change their heat to current one
+  ath.heat = currentHeat;
+  currentAthletes.push(ath);
+  currentAthletes.sort((a,b) => a.lane - b.lane);
+
+  // Remove from otherDivisionAthletes
+  otherDivisionAthletes = otherDivisionAthletes.filter(a => a.id !== athleteId);
+
+  saveToStorage();
+  renderAthletesList();
+  renderHeatsGrid();
+  showToast('✓', `${ath.name} moved to this heat`);
+}
+
+function showToast(icon,msg){const t=document.createElement('div');t.className='toast';t.innerHTML=`<span style="font-size:16px;">${icon}</span><span>${msg}</span>`;document.body.appendChild(t);setTimeout(()=>{t.classList.add('out');setTimeout(()=>t.remove(),320);},2200);}
+
+document.addEventListener('keydown',e=>{if(['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName))return;const vis=!document.getElementById('timer-section').classList.contains('hidden');if(e.key.toLowerCase()==='t'&&vis){e.preventDefault();tapFinish(null);}if(e.key.toLowerCase()==='s'&&vis){e.preventDefault();isRunning?stopTimer():startTimer();}if(e.key==='Escape'){document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));}});
+
+function loginUser(){const pass=document.getElementById('login-pass').value.trim();const correctPass=localStorage.getItem('tt_passcode')||'track2026';if(pass===correctPass){localStorage.setItem('tt_logged_in','true');document.getElementById('login-screen').style.display='none';showToast('✓','Welcome back!');}else{const input=document.getElementById('login-pass');input.style.borderColor='#c0392b';input.value='';setTimeout(()=>input.style.borderColor='rgba(201,168,76,0.3)',800);showToast('⚠️','Incorrect passcode');}}
+function setupPasscode(){const newPass=prompt('Set your passcode (min 4 characters):');if(newPass&&newPass.length>=4){localStorage.setItem('tt_passcode',newPass);localStorage.setItem('tt_logged_in','true');document.getElementById('login-screen').style.display='none';showToast('✓','Passcode set!');}else{alert('Passcode must be at least 4 characters.');}}
+
+// Full manual control — only uses what you put in the CSV "Race Number" column.
+// No auto-assignment at all.
+function assignRaceNumbers(athleteList) {
+  return athleteList;
+}
+
+function loadSampleData() {
+  athletes = [
+    {id:'s1',heat:'100m — Heat 1 — Boys Grade 10',lane:1,name:'Alex Rivera',team:'Milpitas HS',grade:'10',gender:'Boys'},
+    {id:'s2',heat:'100m — Heat 1 — Boys Grade 10',lane:2,name:'Jordan Lee',team:'Valley TC',grade:'10',gender:'Boys'},
+    {id:'s3',heat:'100m — Heat 1 — Boys Grade 10',lane:3,name:'Sam Patel',team:'Speed City',grade:'10',gender:'Boys'},
+    {id:'s4',heat:'100m — Heat 1 — Boys Grade 10',lane:4,name:'Tyler Brooks',team:'Milpitas HS',grade:'10',gender:'Boys'},
+    {id:'s5',heat:'200m — Heat 1 — Girls Grade 9',lane:1,name:'Mia Chen',team:'East Bay Elite',grade:'9',gender:'Girls'},
+    {id:'s6',heat:'200m — Heat 1 — Girls Grade 9',lane:2,name:'Sofia Ramirez',team:'Valley TC',grade:'9',gender:'Girls'},
+    {id:'s7',heat:'200m — Heat 1 — Girls Grade 9',lane:3,name:'Ava Thompson',team:'Speed City',grade:'9',gender:'Girls'},
+    {id:'s8',heat:'400m — Heat 1 — Mixed',lane:1,name:'Liam Torres',team:'Milpitas HS',grade:'11',gender:'Mixed'},
+    {id:'s9',heat:'400m — Heat 1 — Mixed',lane:2,name:'Noah Kim',team:'Valley TC',grade:'11',gender:'Mixed'},
+    {id:'s10',heat:'400m — Heat 1 — Mixed',lane:3,name:'Emma Watson',team:'East Bay Elite',grade:'10',gender:'Mixed'},
+    {id:'s11',heat:'400m — Heat 1 — Mixed',lane:4,name:'Lucas Martinez',team:'Speed City',grade:'11',gender:'Mixed'}
+  ];
+  results['100m — Heat 1 — Boys Grade 10'] = [
+    {place:1,timeMs:11345,time:'00:11.345',athleteId:'s1',name:'Alex Rivera',team:'Milpitas HS',lane:1},
+    {place:2,timeMs:11420,time:'00:11.420',athleteId:'s3',name:'Sam Patel',team:'Speed City',lane:3},
+    {place:3,timeMs:11510,time:'00:11.510',athleteId:'s2',name:'Jordan Lee',team:'Valley TC',lane:2},
+    {place:4,timeMs:11980,time:'00:11.980',athleteId:'s4',name:'Tyler Brooks',team:'Milpitas HS',lane:4}
+  ];
+  saveToStorage();renderAthletesTable();renderHeatsGrid();renderResults();pushState();
+  showToast('✓','Demo loaded — tap a heat card to begin timing');
+}
+
+window.onload=()=>{
+  loadFromStorage();loadMeetName();renderAthletesTable();renderHeatsGrid();renderResults();
+  const loggedIn=localStorage.getItem('tt_logged_in'),hasPass=localStorage.getItem('tt_passcode');
+  if(!loggedIn){document.getElementById('login-screen').style.display='flex';if(!hasPass){setTimeout(()=>{if(confirm('First time here? Set your own passcode?'))setupPasscode();},800);}}
+  else{document.getElementById('login-screen').style.display='none';}
+  // Auto-connect Supabase
+  setTimeout(() => {
+    initSupabase();
+  }, 300);
+  if(!athletes.length)setTimeout(()=>showToast('👋','Upload a CSV or tap "Load Demo" to get started'),1000);
+};
+</script>
+</body>
+</html>
